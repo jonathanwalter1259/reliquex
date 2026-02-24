@@ -1,0 +1,11 @@
+const fs = require('fs');
+const contractData = require('./artifacts/contracts/ReliqueX.sol/ReliqueX.json');
+const abi = contractData.abi;
+const reqPath = '../src/lib/web3/contract.ts';
+let content = fs.readFileSync(reqPath, 'utf8');
+const prefix = 'export const reliqueXABI = ';
+const startIndex = content.indexOf(prefix);
+const prefixContent = content.substring(0, startIndex + prefix.length);
+const newContent = prefixContent + JSON.stringify(abi, null, 2) + ';\n';
+fs.writeFileSync(reqPath, newContent);
+console.log('ABI Updated successfully');

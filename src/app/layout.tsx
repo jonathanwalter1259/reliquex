@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Mono } from "next/font/google";
 import NavBar from "@/components/layout/NavBar";
 import Footer from "@/components/layout/Footer";
+import RiskDisclosure from "@/components/layout/RiskDisclosure";
 import ScrollObserver from "@/components/utils/ScrollObserver";
 import { Web3Provider } from "@/lib/web3/Web3Provider";
 import "./globals.css";
@@ -38,6 +39,7 @@ export default function RootLayout({
           <ScrollObserver />
           <NavBar />
           {children}
+          <RiskDisclosure />
           <Footer />
         </Web3Provider>
       </body>

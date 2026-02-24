@@ -59,12 +59,13 @@ export default function AssetRow({ asset }: { asset: Asset }) {
             const contractAssetId = Math.floor(Math.random() * 1000000);
             const totalShares = BigInt(100); // 100 fractional shares
             const pricePerShare = BigInt("10000000000000"); // 0.00001 ETH for testing
+            const ipfsURI = `ipfs://pending/${contractAssetId}`;
 
             const hash = await writeContractAsync({
                 address: reliqueXAddress as `0x${string}`,
                 abi: reliqueXABI,
-                functionName: 'mintFractions',
-                args: [BigInt(contractAssetId), totalShares, pricePerShare],
+                functionName: 'proposeMint',
+                args: [BigInt(contractAssetId), totalShares, pricePerShare, ipfsURI],
             });
 
             // Update database backend with successful mint

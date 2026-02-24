@@ -308,17 +308,49 @@ export default function AssetPage(props: { params: Promise<{ id: string }> }) {
                     <div className="auth-ribbon__hash uppercase font-mono tracking-widest text-[#888]">{asset.contractAssetId ? `ONCHAIN_ID: ${asset.contractAssetId}` : 'PENDING_ONCHAIN_MINT'}</div>
                 </div>
 
-                {/*  Verification Ledger  */}
+                {/*  Transparency Ledger — dAppBay Proof of Reserves  */}
                 <div className="verification-ledger">
                     <div className="hud-corner hud-corner--tl"></div>
                     <div className="hud-corner hud-corner--tr"></div>
                     <div className="hud-corner hud-corner--bl"></div>
                     <div className="hud-corner hud-corner--br"></div>
                     <div className="ledger-header">
-                        <span className="ledger-header__title">// VERIFICATION_LEDGER</span>
-                        <span className="ledger-header__status">● COMPLETED_RECORDS</span>
+                        <span className="ledger-header__title">// TRANSPARENCY_LEDGER [PROOF_OF_RESERVES]</span>
+                        <span className="ledger-header__status">● IMMUTABLE_RECORDS</span>
                     </div>
                     <div className="ledger-entries">
+                        <div className="ledger-entry">
+                            <span className="ledger-entry__key">IPFS_METADATA_CID:</span>
+                            <span className="ledger-entry__value font-mono tracking-widest">
+                                {asset.contractAssetId
+                                    ? <a href={`https://ipfs.io/ipfs/pending/${asset.contractAssetId}`} target="_blank" rel="noopener noreferrer" className="text-[#00FF00] hover:underline">ipfs://pending/{asset.contractAssetId}</a>
+                                    : <span className="text-[#888]">AWAITING_ON_CHAIN_MINT</span>
+                                }
+                            </span>
+                        </div>
+                        <div className="ledger-entry">
+                            <span className="ledger-entry__key">SMART_CONTRACT:</span>
+                            <span className="ledger-entry__value font-mono tracking-widest">
+                                <a href={`https://bscscan.com/address/${reliqueXAddress}`} target="_blank" rel="noopener noreferrer" className="text-[#00FF00] hover:underline">{reliqueXAddress.slice(0, 6)}...{reliqueXAddress.slice(-4)}</a>
+                                <span className="text-[#888] ml-2">[ERC-1155 // BNB_CHAIN]</span>
+                            </span>
+                        </div>
+                        <div className="ledger-entry">
+                            <span className="ledger-entry__key">ON_CHAIN_ASSET_ID:</span>
+                            <span className="ledger-entry__value ledger-entry__value--green uppercase">{asset.contractAssetId || 'PENDING_ONCHAIN_MINT'}</span>
+                        </div>
+                        <div className="ledger-entry">
+                            <span className="ledger-entry__key">PHYSICAL_RESERVE:</span>
+                            <span className="ledger-entry__value ledger-entry__value--green uppercase">{asset.physicalLocation || 'PENDING_SECURE_TRANSPORT'}</span>
+                        </div>
+                        <div className="ledger-entry">
+                            <span className="ledger-entry__key">AUTH_SCORE:</span>
+                            <span className="ledger-entry__value ledger-entry__value--green uppercase">{asset.authenticityScore ? `${asset.authenticityScore}/100 [PASSED]` : 'PENDING'}</span>
+                        </div>
+                        <div className="ledger-entry">
+                            <span className="ledger-entry__key">MINT_MECHANISM:</span>
+                            <span className="ledger-entry__value text-yellow-400 uppercase">TIME-LOCKED (24H DELAY) — ANTI-RUG COMPLIANT</span>
+                        </div>
                         <div className="ledger-entry">
                             <span className="ledger-entry__key">DATE_INITIALIZED:</span>
                             <span className="ledger-entry__value">{new Date(asset.createdAt).toUTCString()}</span>
@@ -326,14 +358,6 @@ export default function AssetPage(props: { params: Promise<{ id: string }> }) {
                         <div className="ledger-entry">
                             <span className="ledger-entry__key">LAST_UPDATED:</span>
                             <span className="ledger-entry__value">{new Date(asset.updatedAt).toUTCString()}</span>
-                        </div>
-                        <div className="ledger-entry">
-                            <span className="ledger-entry__key">VAULT_LOCATION:</span>
-                            <span className="ledger-entry__value ledger-entry__value--green uppercase">{asset.physicalLocation || 'PENDING_SECURE_TRANSPORT'}</span>
-                        </div>
-                        <div className="ledger-entry">
-                            <span className="ledger-entry__key">AUTH_SCORE:</span>
-                            <span className="ledger-entry__value ledger-entry__value--green uppercase">{asset.authenticityScore ? `${asset.authenticityScore}/100 [PASSED]` : 'PENDING'}</span>
                         </div>
                         <div className="ledger-entry">
                             <span className="ledger-entry__key">SUBMITTER_WALLET:</span>

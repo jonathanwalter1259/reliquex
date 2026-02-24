@@ -1,4 +1,5 @@
 import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-verify";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -21,6 +22,15 @@ const config = {
             chainId: 56,
             accounts: [privateKey]
         }
+    },
+    etherscan: {
+        apiKey: {
+            bsc: process.env.BSCSCAN_API_KEY || "",
+            bscTestnet: process.env.BSCSCAN_API_KEY || ""
+        }
+    },
+    sourcify: {
+        enabled: false
     }
 };
 

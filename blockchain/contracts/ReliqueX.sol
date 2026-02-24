@@ -10,27 +10,78 @@ contract ReliqueX is ERC1155Supply, Ownable, ERC1155Holder {
     mapping(uint256 => uint256) public initialSupply;
     mapping(uint256 => bool) public isClaimed;
 
+    uint256 public constant MINT_DELAY = 1 days;
+
+    struct MintProposal {
+        uint256 totalShares;
+        uint256 pricePerShare;
+        string ipfsURI;
+        uint256 executeAfter;
+        bool executed;
+    }
+
+    // assetId => MintProposal
+    mapping(uint256 => MintProposal) public mintProposals;
+    // assetId => ipfs URI
+    mapping(uint256 => string) private _tokenURIs;
+
     event FractionsMinted(uint256 indexed assetId, uint256 totalShares, uint256 pricePerShare);
     event SharesPurchased(uint256 indexed assetId, address indexed buyer, uint256 amount);
     event PhysicalClaimed(uint256 indexed assetId, address indexed claimer);
+    event MintProposed(uint256 indexed assetId, uint256 totalShares, uint256 pricePerShare, uint256 executeAfter);
 
-    constructor() ERC1155("https://reliquex.com/api/metadata/{id}.json") Ownable(msg.sender) {}
+    constructor() ERC1155("") Ownable(msg.sender) {}
 
     /**
-     * @dev Mint fractional shares for a newly authenticated physical asset.
-     * Only the admin (owner) can call this after validating the real-world item.
+     * @dev Override ERC1155 URI to return the IPFS hash for each specific authenticated token
      */
-    function mintFractions(uint256 _assetId, uint256 _totalShares, uint256 _pricePerShare) external onlyOwner {
-        require(initialSupply[_assetId] == 0, "Asset already minted");
-        require(_totalShares > 0, "Must mint at least 1 share");
-        
-        // Mint to this contract
-        _mint(address(this), _assetId, _totalShares, "");
-        
-        initialSupply[_assetId] = _totalShares;
-        sharePrice[_assetId] = _pricePerShare;
+    function uri(uint256 tokenId) public view virtual override returns (string memory) {
+        string memory tokenURI = _tokenURIs[tokenId];
+        return bytes(tokenURI).length > 0 ? tokenURI : super.uri(tokenId);
+    }
 
-        emit FractionsMinted(_assetId, _totalShares, _pricePerShare);
+    /**
+     * @dev Step 1 of Time-Lock: Propose the minting of fractional shares.
+     * Starts the 24-hour countdown before the admin can execute the supply creation.
+     */
+    function proposeMint(uint256 _assetId, uint256 _totalShares, uint256 _pricePerShare, string memory _ipfsURI) external onlyOwner {
+        require(initialSupply[_assetId] == 0, "Asset already minted");
+        require(mintProposals[_assetId].executeAfter == 0, "Proposal already exists");
+        require(_totalShares > 0, "Must mint at least 1 share");
+
+        uint256 executeTime = block.timestamp + MINT_DELAY;
+
+        mintProposals[_assetId] = MintProposal({
+            totalShares: _totalShares,
+            pricePerShare: _pricePerShare,
+            ipfsURI: _ipfsURI,
+            executeAfter: executeTime,
+            executed: false
+        });
+
+        emit MintProposed(_assetId, _totalShares, _pricePerShare, executeTime);
+    }
+
+    /**
+     * @dev Step 2 of Time-Lock: Execute the mint after the 24-hour delay has passed.
+     */
+    function executeMint(uint256 _assetId) external onlyOwner {
+        MintProposal storage proposal = mintProposals[_assetId];
+        require(proposal.executeAfter > 0, "No proposal exists");
+        require(block.timestamp >= proposal.executeAfter, "Time-lock period not met (24 hours required)");
+        require(!proposal.executed, "Proposal already executed");
+        require(initialSupply[_assetId] == 0, "Asset already minted");
+
+        proposal.executed = true;
+
+        // Mint to this contract
+        _mint(address(this), _assetId, proposal.totalShares, "");
+        
+        initialSupply[_assetId] = proposal.totalShares;
+        sharePrice[_assetId] = proposal.pricePerShare;
+        _tokenURIs[_assetId] = proposal.ipfsURI;
+
+        emit FractionsMinted(_assetId, proposal.totalShares, proposal.pricePerShare);
     }
 
     /**
