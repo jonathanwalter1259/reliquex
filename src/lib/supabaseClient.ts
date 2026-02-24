@@ -7,4 +7,7 @@ if (!supabaseUrl || !supabaseKey) {
     console.warn('Supabase URL or Key is missing. Storage functionality will be disabled.');
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+export const supabase = createClient(
+    supabaseUrl || 'https://dummy.supabase.co',
+    supabaseKey || 'dummy_anon_key'
+);

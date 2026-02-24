@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { brand, model, estimatedValue, description, walletAddress } = body;
+        const { brand, model, estimatedValue, description, walletAddress, imagePath, category } = body;
 
-        if (!brand || !model || !estimatedValue || !description || !walletAddress) {
+        if (!brand || !model || !description || !walletAddress) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -24,6 +24,8 @@ export async function POST(req: Request) {
             data: {
                 name: `${brand} ${model}`,
                 description: description,
+                category: category || 'UNCATEGORIZED',
+                imagePath: imagePath,
                 submitterWallet: user.walletAddress,
             },
         });
