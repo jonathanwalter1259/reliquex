@@ -41,7 +41,7 @@ export default async function AdminVaultManager() {
     }));
 
     return (
-        <main className="min-h-screen bg-[#030303] pt-32 pb-20">
+        <main className="min-h-screen bg-[#030303] pb-20" style={{ paddingTop: '12rem' }}>
             <AdminVaultClient initialAssets={assets} />
         </main>
     );
