@@ -96,6 +96,19 @@ export default function Hero() {
                     </svg>
                 </Link>
             </div>
+
+            {/* Orynth Badge */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <a href="https://orynth.dev/projects/reliquex" target="_blank" rel="noopener noreferrer">
+                    <img
+                        src="https://orynth.dev/api/badge/reliquex?theme=dark&style=default"
+                        alt="Featured on Orynth"
+                        width={260}
+                        height={80}
+                        style={{ display: 'block' }}
+                    />
+                </a>
+            </div>
         </section>
     );
 }
