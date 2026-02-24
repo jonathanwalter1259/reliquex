@@ -28,11 +28,17 @@ export default async function AdminVaultManager() {
             </main>
         );
     }
-    const assets = await prisma.asset.findMany({
+    const rawAssets = await prisma.asset.findMany({
         orderBy: {
             createdAt: 'desc',
         },
     });
+
+    const assets = rawAssets.map(asset => ({
+        ...asset,
+        createdAt: asset.createdAt.toISOString(),
+        updatedAt: asset.updatedAt.toISOString(),
+    }));
 
     return (
         <main className="min-h-screen pt-32 pb-20">

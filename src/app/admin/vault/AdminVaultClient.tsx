@@ -4,11 +4,16 @@ import { useState, useEffect } from 'react';
 import { Asset } from '@prisma/client';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function AdminVaultClient({ initialAssets }: { initialAssets: Asset[] }) {
-    const [assets, setAssets] = useState<Asset[]>(initialAssets);
+export type SerializedAsset = Omit<Asset, 'createdAt' | 'updatedAt'> & {
+    createdAt: string | Date;
+    updatedAt: string | Date;
+};
+
+export default function AdminVaultClient({ initialAssets }: { initialAssets: SerializedAsset[] }) {
+    const [assets, setAssets] = useState<SerializedAsset[]>(initialAssets);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [currentAsset, setCurrentAsset] = useState<Partial<Asset>>({});
+    const [currentAsset, setCurrentAsset] = useState<Partial<SerializedAsset>>({});
     const [systemLog, setSystemLog] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -17,7 +22,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ass
         setMounted(true);
     }, []);
 
-    const openModal = (asset?: Asset) => {
+    const openModal = (asset?: SerializedAsset) => {
         if (asset) {
             setIsEditMode(true);
             setCurrentAsset(asset);
