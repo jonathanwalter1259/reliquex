@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useAccount, useSignMessage, useChainId } from 'wagmi';
+import { useAccount, useSignMessage, useChainId, useDisconnect } from 'wagmi';
 import { SiweMessage } from 'siwe';
 import { useAppKit } from '@reown/appkit/react';
 
@@ -15,11 +15,14 @@ export default function NavBar() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     // Wagmi & AppKit hooks
     const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const { signMessageAsync } = useSignMessage();
+    const { disconnect } = useDisconnect();
     const { open } = useAppKit();
 
     useEffect(() => {
@@ -40,6 +43,7 @@ export default function NavBar() {
                         const meData = await meRes.json();
                         if (meData.walletAddress === address.toLowerCase()) {
                             setIsAuthenticated(true);
+                            setUserRole(meData.role || 'USER');
                             return;
                         }
                     }
@@ -49,6 +53,7 @@ export default function NavBar() {
             } else if (!isConnected && isAuthenticated) {
                 // User disconnected their wallet, clear session
                 setIsAuthenticated(false);
+                setUserRole(null);
                 fetch('/api/auth/me', { method: 'DELETE' }).catch(console.error);
             }
         };
@@ -83,7 +88,9 @@ export default function NavBar() {
             });
 
             if (verifyRes.ok) {
+                const data = await verifyRes.json();
                 setIsAuthenticated(true);
+                setUserRole(data.user?.role || 'USER');
             } else {
                 const errData = await verifyRes.json();
                 setAuthError(errData.error || 'Verification failed');
@@ -93,6 +100,19 @@ export default function NavBar() {
             setAuthError(error?.message || 'Signature rejected');
         } finally {
             setIsAuthenticating(false);
+        }
+    };
+
+    // Disconnect Logic
+    const handleDisconnect = async () => {
+        try {
+            await fetch('/api/auth/me', { method: 'DELETE' });
+            disconnect();
+            setIsAuthenticated(false);
+            setUserRole(null);
+            setIsDropdownOpen(false);
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -113,16 +133,35 @@ export default function NavBar() {
                     {mounted && isAuthenticated && (
                         <Link href="/dashboard" className={`nav-link ${pathname === '/dashboard' ? 'active' : ''}`}>DASHBOARD</Link>
                     )}
+                    {mounted && isAuthenticated && userRole === 'ADMIN' && (
+                        <Link href="/admin/vault" className={`nav-link text-[#00ff41] font-bold ${pathname === '/admin/vault' ? 'active shadow-[0_0_8px_rgba(0,255,0,0.4)]' : ''}`}>[ ADMIN_CONSOLE ]</Link>
+                    )}
                 </div>
 
                 {mounted && (
                     <div style={{ marginLeft: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         {isConnected ? (
                             <div className="flex items-center gap-3">
-                                {/* Address Display */}
-                                <div className="font-mono text-[11px] border border-[#333] px-3 py-1.5 text-[#fff] bg-[#111] uppercase tracking-wider">
-                                    <span className="text-[#888] mr-2">ID:</span>
-                                    {address?.slice(0, 6)}...{address?.slice(-4)}
+                                {/* Address Display & Dropdown */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="font-mono text-[11px] border border-[#333] px-3 py-1.5 text-[#fff] bg-[#111] uppercase tracking-wider hover:border-[#00ff41] transition-colors cursor-pointer flex items-center gap-2"
+                                    >
+                                        <span className="text-[#888]">ID:</span>
+                                        {address?.slice(0, 6)}...{address?.slice(-4)}
+                                    </button>
+
+                                    {isDropdownOpen && (
+                                        <div className="absolute top-full right-0 mt-2 bg-[#000] border border-[#333] min-w-[150px] shadow-[0_0_15px_rgba(0,255,0,0.1)] z-50">
+                                            <button
+                                                onClick={handleDisconnect}
+                                                className="w-full text-left font-mono text-[11px] text-[#ff0033] hover:text-[#000] hover:bg-[#ff0033] px-4 py-3 transition-colors tracking-widest uppercase border-l-2 border-transparent hover:border-[#fff]"
+                                            >
+                                                &gt; DISCONNECT_
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Auth Status/Button */}

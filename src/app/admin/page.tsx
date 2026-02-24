@@ -10,7 +10,19 @@ export const dynamic = "force-dynamic";
 export default async function AdminDashboard() {
     const session = await getSession();
     if (!session || session.role !== 'ADMIN') {
-        redirect('/');
+        return (
+            <main className="page-wrap reveal">
+                <div className="container" style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                    <h1 style={{ color: '#ff0033', fontFamily: 'var(--mono)', fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', letterSpacing: '0.1em', marginBottom: '1rem' }}>
+                        &gt; [SYSTEM_ERROR]: 403 ACCESS DENIED
+                    </h1>
+                    <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: '0.9rem', maxWidth: '600px', lineHeight: '1.6' }}>
+                        SECURITY PROTOCOL VIOLATION. Your connected wallet ({session?.walletAddress || 'UNAUTHENTICATED'}) does not possess 'ADMIN' clearance.
+                        Further attempts to access restricted endpoints will be logged.
+                    </p>
+                </div>
+            </main>
+        );
     }
     // Fetch all assets, order by newest first
     const assets = await prisma.asset.findMany({
