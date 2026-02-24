@@ -246,8 +246,9 @@ export default function AssetPage({ params }: { params: { id: string } }) {
                                 </div>
                             )}
                             {txError && (
-                                <div className="mt-2 text-red-500 text-xs font-mono tracking-widest uppercase">
-                                    &gt; ERR_MSG: {txError.message.split('\n')[0]}
+                                <div className="mt-2 text-[#ff0033] text-[10px] font-mono tracking-widest uppercase bg-[#ff0033]/10 border border-[#ff0033]/30 p-3 shadow-[0_0_15px_rgba(255,0,51,0.2)]">
+                                    &gt; [SYSTEM_FAULT]: TRANSACTION_REVERTED
+                                    <div className="text-[#ff0033]/60 mt-1 truncate">:: {txError.message.split('\n')[0]}</div>
                                 </div>
                             )}
                         </div>

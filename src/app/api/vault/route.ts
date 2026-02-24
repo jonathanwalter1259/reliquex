@@ -47,8 +47,8 @@ export async function POST(req: Request) {
                 name,
                 description,
                 category,
-                pricePerShare: pricePerShare ? parseFloat(pricePerShare) : null,
-                totalShares: totalShares ? parseInt(totalShares) : null,
+                pricePerShare: pricePerShare && !isNaN(parseFloat(pricePerShare)) ? parseFloat(pricePerShare) : null,
+                totalShares: totalShares && !isNaN(parseInt(totalShares)) ? parseInt(totalShares) : null,
                 imagePath,
                 submitterWallet: user.walletAddress,
                 status: 'AUTHENTICATED' // Direct vault imports are pre-authenticated

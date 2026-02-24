@@ -43,12 +43,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
                 ...(name && { name }),
                 ...(description && { description }),
                 ...(category && { category }),
-                ...(pricePerShare && { pricePerShare: parseFloat(pricePerShare) }),
-                ...(totalShares && { totalShares: parseInt(totalShares) }),
+                ...(pricePerShare !== undefined && pricePerShare !== "" && !isNaN(parseFloat(pricePerShare)) && { pricePerShare: parseFloat(pricePerShare) }),
+                ...(totalShares !== undefined && totalShares !== "" && !isNaN(parseInt(totalShares)) && { totalShares: parseInt(totalShares) }),
                 ...(imagePath && { imagePath }),
                 ...(status && { status }),
                 ...(physicalLocation && { physicalLocation }),
-                ...(authenticityScore && { authenticityScore: parseInt(authenticityScore) }),
+                ...(authenticityScore !== undefined && authenticityScore !== "" && !isNaN(parseInt(authenticityScore)) && { authenticityScore: parseInt(authenticityScore) }),
             },
         });
 

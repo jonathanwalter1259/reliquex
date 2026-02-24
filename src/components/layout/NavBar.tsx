@@ -175,10 +175,10 @@ export default function NavBar() {
                                             {isAuthenticating ? '[SIGNING...]' : 'AUTHENTICATE'}
                                         </button>
                                         {authError && (
-                                            <span className="text-red-500 text-[10px] uppercase font-mono absolute top-full mt-1 right-0 whitespace-nowrap">
+                                            <span className="text-[#ff0033] text-[9px] uppercase font-mono absolute top-[120%] right-0 whitespace-nowrap bg-[#ff0033]/10 border border-[#ff0033]/30 px-2 py-1 shadow-[0_0_10px_rgba(255,0,51,0.2)]">
                                                 {(authError.includes('Prisma') || authError.includes('database'))
-                                                    ? '> [SYSTEM_ERROR]: DATABASE_CONNECTION_FAILED'
-                                                    : `> ERR_MSG: ${authError}`}
+                                                    ? '> [SYSTEM_ERROR]: DBS_CONNECTION_FAILED'
+                                                    : '> [SYSTEM_FAULT]: SIGNATURE_REJECTED'}
                                             </span>
                                         )}
                                     </div>

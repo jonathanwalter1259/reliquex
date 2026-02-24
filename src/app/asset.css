@@ -57,6 +57,7 @@
     object-fit: contain;
     display: block;
     transition: opacity 0.3s ease;
+    mix-blend-mode: screen;
 }
 
 /* Thumbnails */
@@ -81,6 +82,7 @@
     height: 80px;
     object-fit: contain;
     display: block;
+    mix-blend-mode: screen;
 }
 
 .asset-thumb:hover {
