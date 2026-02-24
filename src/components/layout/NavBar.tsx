@@ -3,43 +3,77 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 
 export default function NavBar() {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticating, setIsAuthenticating] = useState(false);
 
     // Wagmi hooks
     const { address, isConnected } = useAccount();
-    const { connectors, connect } = useConnect();
-    const { disconnect } = useDisconnect();
+    const { signMessageAsync } = useSignMessage();
 
     useEffect(() => {
         setMounted(true);
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 80);
-        };
+        const handleScroll = () => setIsScrolled(window.scrollY > 80);
         window.addEventListener('scroll', handleScroll, { passive: true });
-
-        // Check initial scroll position
         handleScroll();
-
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const handleConnectClick = () => {
-        if (isConnected) {
-            disconnect();
-        } else {
-            // Pick first available connector (usually injected/MetaMask)
-            const connector = connectors[0];
-            if (connector) {
-                connect({ connector });
+    useEffect(() => {
+        const checkAuth = async () => {
+            if (isConnected && address && !isAuthenticated && !isAuthenticating) {
+                setIsAuthenticating(true);
+                try {
+                    // 1. Check if session already active for this address
+                    const meRes = await fetch('/api/auth/me');
+                    if (meRes.ok) {
+                        const meData = await meRes.json();
+                        if (meData.walletAddress === address.toLowerCase()) {
+                            setIsAuthenticated(true);
+                            setIsAuthenticating(false);
+                            return;
+                        }
+                    }
+
+                    // 2. If not, trigger SIWE flow
+                    const nonceRes = await fetch('/api/auth/nonce');
+                    const nonce = await nonceRes.text();
+
+                    const domain = window.location.host;
+                    const origin = window.location.origin;
+
+                    const message = `${domain} wants you to sign in with your Ethereum account:\n${address}\n\nSign in to securely authenticate your wallet for the ReliqueX protocol.\n\nURI: ${origin}\nVersion: 1\nChain ID: 56\nNonce: ${nonce}\nIssued At: ${new Date().toISOString()}`;
+
+                    const signature = await signMessageAsync({ message });
+
+                    const verifyRes = await fetch('/api/auth/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message, signature })
+                    });
+
+                    if (verifyRes.ok) {
+                        setIsAuthenticated(true);
+                    }
+                } catch (error) {
+                    console.error("SIWE Authentication failed:", error);
+                } finally {
+                    setIsAuthenticating(false);
+                }
+            } else if (!isConnected && isAuthenticated) {
+                setIsAuthenticated(false);
+                fetch('/api/auth/me', { method: 'DELETE' }).catch(console.error);
             }
-        }
-    };
+        };
+
+        checkAuth();
+    }, [isConnected, address, isAuthenticated, signMessageAsync, isAuthenticating]);
 
     return (
         <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`} id="navbar">
@@ -51,22 +85,21 @@ export default function NavBar() {
                 <div className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`} id="navLinks">
                     <Link href="/" className={`nav-link ${pathname === '/' ? 'active' : ''}`}>HOME</Link>
                     <Link href="/vaults" className={`nav-link ${pathname === '/vaults' ? 'active' : ''}`}>VAULTS</Link>
-                    {mounted && isConnected && (
+                    {mounted && isAuthenticated && (
                         <Link href="/submit" className={`nav-link ${pathname === '/submit' ? 'active' : ''}`}>SUBMIT ASSET</Link>
                     )}
                     <Link href="/whitepaper" className={`nav-link ${pathname === '/whitepaper' ? 'active' : ''}`}>WHITEPAPER</Link>
-                    {mounted && isConnected && (
+                    {mounted && isAuthenticated && (
                         <Link href="/dashboard" className={`nav-link ${pathname === '/dashboard' ? 'active' : ''}`}>DASHBOARD</Link>
                     )}
                 </div>
 
-                <button className="btn-connect" id="connectWallet" onClick={handleConnectClick}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                        <line x1="1" y1="10" x2="23" y2="10" />
-                    </svg>
-                    {isConnected && address ? `${address.substring(0, 6)}...${address.slice(-4)}` : 'Connect Wallet'}
-                </button>
+                {mounted && (
+                    <div style={{ marginLeft: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        {isAuthenticating && <span className="text-[#00ff41] text-xs font-mono animate-pulse uppercase tracking-widest">[AWAITING_SIG]</span>}
+                        <appkit-button />
+                    </div>
+                )}
 
                 <div
                     className={`menu-toggle ${isMobileMenuOpen ? 'active' : ''}`}

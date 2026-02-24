@@ -1,4 +1,31 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Asset } from '@prisma/client';
+
 export default function Marketplace() {
+    const [assets, setAssets] = useState<Asset[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAssets = async () => {
+            try {
+                const res = await fetch('/api/vault');
+                const data = await res.json();
+                if (data.success) {
+                    setAssets(data.assets.filter((a: Asset) => a.status === 'AUTHENTICATED' || a.status === 'MINTED'));
+                }
+            } catch (error) {
+                console.error('Failed to fetch marketplace assets:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchAssets();
+    }, []);
+
     return (
         <section className="marketplace reveal" id="daily-deals">
             <div className="container">
@@ -18,120 +45,60 @@ export default function Marketplace() {
                     </div>
                     <select className="marketplace__filter" defaultValue="All Categories">
                         <option value="All Categories">All Categories</option>
-                        <option value="Watches">Watches</option>
-                        <option value="Sneakers">Sneakers</option>
-                        <option value="Jewelry">Jewelry</option>
-                        <option value="Bags">Bags</option>
-                    </select>
-                    <select className="marketplace__filter" defaultValue="Recently Listed">
-                        <option value="Recently Listed">Recently Listed</option>
-                        <option value="Price: Low → High">Price: Low → High</option>
-                        <option value="Price: High → Low">Price: High → Low</option>
-                        <option value="Most Shares Sold">Most Shares Sold</option>
+                        <option value="WATCHES">Watches</option>
+                        <option value="SNEAKERS">Sneakers</option>
+                        <option value="JEWELRY">Jewelry</option>
+                        <option value="BAGS">Bags</option>
                     </select>
                 </div>
 
                 {/* Vault Cards Grid */}
                 <div className="marketplace__grid">
-                    {/* Card 1 */}
-                    <div className="vault-card">
-                        <div className="hud-corner hud-corner--tl"></div>
-                        <div className="hud-corner hud-corner--tr"></div>
-                        <div className="hud-corner hud-corner--bl"></div>
-                        <div className="hud-corner hud-corner--br"></div>
-                        <div className="vault-card__img-wrapper">
-                            <img src="/assets/rm-watch.png" alt="Richard Mille RM 011" className="vault-card__img" />
+                    {isLoading ? (
+                        <div className="col-span-full py-12 text-center font-mono text-[#00ff41] tracking-widest animate-pulse">
+                            &gt; SYNCING_VAULT_PROTOCOL...
                         </div>
-                        <div className="vault-card__body">
-                            <div className="vault-card__badge">[STATUS: SECURED]</div>
-                            <h3 className="vault-card__name">Richard Mille RM 011</h3>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">VAULT_ID:</span>
-                                <span className="vault-card__value">RM-011-X7</span>
-                            </div>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">TOTAL_VALUE:</span>
-                                <span className="vault-card__value">$320,000</span>
-                            </div>
-                            <div className="vault-card__price">SHARE_PRICE: $3.20</div>
-                            <div className="vault-card__shares">SHARES_AVAIL: 42,800 / 100,000</div>
+                    ) : assets.length === 0 ? (
+                        <div className="col-span-full py-12 text-center font-mono text-[#888] tracking-widest">
+                            NO ACTIVE ASSETS DETECTED IN VAULT.
                         </div>
-                    </div>
-
-                    {/* Card 2 */}
-                    <div className="vault-card">
-                        <div className="hud-corner hud-corner--tl"></div>
-                        <div className="hud-corner hud-corner--tr"></div>
-                        <div className="hud-corner hud-corner--bl"></div>
-                        <div className="hud-corner hud-corner--br"></div>
-                        <div className="vault-card__img-wrapper">
-                            <img src="/assets/dior-sneakers.png" alt="Dior x Air Jordan 1" className="vault-card__img" />
-                        </div>
-                        <div className="vault-card__body">
-                            <div className="vault-card__badge">[100 VERIFIED]</div>
-                            <h3 className="vault-card__name">Dior x Air Jordan 1 High</h3>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">VAULT_ID:</span>
-                                <span className="vault-card__value">DJ-AJ1-04</span>
-                            </div>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">TOTAL_VALUE:</span>
-                                <span className="vault-card__value">$18,500</span>
-                            </div>
-                            <div className="vault-card__price">SHARE_PRICE: $1.85</div>
-                            <div className="vault-card__shares">SHARES_AVAIL: 6,200 / 10,000</div>
-                        </div>
-                    </div>
-
-                    {/* Card 3 */}
-                    <div className="vault-card">
-                        <div className="hud-corner hud-corner--tl"></div>
-                        <div className="hud-corner hud-corner--tr"></div>
-                        <div className="hud-corner hud-corner--bl"></div>
-                        <div className="hud-corner hud-corner--br"></div>
-                        <div className="vault-card__img-wrapper">
-                            <img src="/assets/necklace.png" alt="Emerald Diamond Necklace" className="vault-card__img" />
-                        </div>
-                        <div className="vault-card__body">
-                            <div className="vault-card__badge">[STATUS: SECURED]</div>
-                            <h3 className="vault-card__name">Emerald &amp; Diamond Rivière</h3>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">VAULT_ID:</span>
-                                <span className="vault-card__value">EM-RV-18</span>
-                            </div>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">TOTAL_VALUE:</span>
-                                <span className="vault-card__value">$245,000</span>
-                            </div>
-                            <div className="vault-card__price">SHARE_PRICE: $2.45</div>
-                            <div className="vault-card__shares">SHARES_AVAIL: 71,500 / 100,000</div>
-                        </div>
-                    </div>
-
-                    {/* Card 4 */}
-                    <div className="vault-card">
-                        <div className="hud-corner hud-corner--tl"></div>
-                        <div className="hud-corner hud-corner--tr"></div>
-                        <div className="hud-corner hud-corner--bl"></div>
-                        <div className="hud-corner hud-corner--br"></div>
-                        <div className="vault-card__img-wrapper">
-                            <img src="/assets/rolex-daytona.png" alt="Rolex Daytona Cosmograph" className="vault-card__img" />
-                        </div>
-                        <div className="vault-card__body">
-                            <div className="vault-card__badge">[100 VERIFIED]</div>
-                            <h3 className="vault-card__name">Rolex Daytona Cosmograph</h3>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">VAULT_ID:</span>
-                                <span className="vault-card__value">RX-DT-116</span>
-                            </div>
-                            <div className="vault-card__meta">
-                                <span className="vault-card__label">TOTAL_VALUE:</span>
-                                <span className="vault-card__value">$75,000</span>
-                            </div>
-                            <div className="vault-card__price">SHARE_PRICE: $2.00</div>
-                            <div className="vault-card__shares">SHARES_AVAIL: 28,400 / 37,500</div>
-                        </div>
-                    </div>
+                    ) : (
+                        assets.map((asset) => (
+                            <Link href={`/asset/${asset.id}`} key={asset.id} className="vault-card block hover:cursor-pointer transition-transform hover:-translate-y-2">
+                                <div className="hud-corner hud-corner--tl"></div>
+                                <div className="hud-corner hud-corner--tr"></div>
+                                <div className="hud-corner hud-corner--bl"></div>
+                                <div className="hud-corner hud-corner--br"></div>
+                                <div className="vault-card__img-wrapper border-b border-[#333]">
+                                    {asset.imagePath ? (
+                                        <img src={asset.imagePath} alt={asset.name} className="vault-card__img object-cover w-full h-full" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[#333] font-mono text-sm tracking-widest">
+                                            [NO_IMAGE_DATA]
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="vault-card__body">
+                                    <div className="vault-card__badge">[{asset.status}]</div>
+                                    <h3 className="vault-card__name text-white">{asset.name}</h3>
+                                    <div className="vault-card__meta">
+                                        <span className="vault-card__label">VAULT_ID:</span>
+                                        <span className="vault-card__value text-[#888]">{asset.id.slice(0, 8)}</span>
+                                    </div>
+                                    <div className="vault-card__meta">
+                                        <span className="vault-card__label">CATEGORY:</span>
+                                        <span className="vault-card__value text-[#888]">{asset.category}</span>
+                                    </div>
+                                    <div className="vault-card__price text-[#00ff41] mt-4">
+                                        PRICE_PER_SHARE: {asset.pricePerShare ? `$${asset.pricePerShare.toFixed(2)}` : 'TBD'}
+                                    </div>
+                                    <div className="vault-card__shares text-[#888] mt-2">
+                                        TOTAL_SHARES: {asset.totalShares ? asset.totalShares.toLocaleString() : 'N/A'}
+                                    </div>
+                                </div>
+                            </Link>
+                        ))
+                    )}
                 </div>
             </div>
         </section>

@@ -22,6 +22,9 @@ model Asset {
   contractAssetId     Int?        @unique // The ID on the ERC-1155 contract once minted
   name                String
   description         String?
+  category            AssetCategory @default(COLLECTIBLES)
+  pricePerShare       Float?
+  imagePath           String?
   status              AssetStatus @default(PENDING_REVIEW)
   physicalLocation    String?     // e.g., "Facility Alpha, Geneva"
   authenticityScore   Int?        // Out of 100
@@ -44,4 +47,13 @@ enum AssetStatus {
   RECEIVED_IN_VAULT
   AUTHENTICATED
   MINTED
+}
+
+enum AssetCategory {
+  WATCHES
+  ART
+  JEWELRY
+  CARS
+  REAL_ESTATE
+  COLLECTIBLES
 }

@@ -1,11 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 import AssetRow from './AssetRow';
+import { getSession } from '@/lib/session';
+import { redirect } from 'next/navigation';
 
 const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+        redirect('/');
+    }
     // Fetch all assets, order by newest first
     const assets = await prisma.asset.findMany({
         orderBy: { createdAt: 'desc' },
