@@ -2,20 +2,28 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ethers } from "ethers";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function main() {
-    console.log("Deploying ReliqueX contract via ethers...");
+    console.log("Deploying ReliqueX contract to BSC Mainnet via ethers...");
 
-    const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-    const signer = await provider.getSigner();
+    const provider = new ethers.JsonRpcProvider("https://bsc-dataseed.binance.org/");
+    const privateKey = process.env.PRIVATE_KEY;
+    if (!privateKey) throw new Error("PRIVATE_KEY missing in .env");
+
+    const signer = new ethers.Wallet(privateKey, provider);
+    console.log("Deploying contracts with the account:", signer.address);
 
     const artifactPath = path.join(__dirname, "../artifacts/contracts/ReliqueX.sol/ReliqueX.json");
     const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf-8"));
 
     const factory = new ethers.ContractFactory(artifact.abi, artifact.bytecode, signer);
+    console.log("Sending deploy transaction...");
     const reliquex = await factory.deploy();
 
     await reliquex.waitForDeployment();
