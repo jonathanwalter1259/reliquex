@@ -38,117 +38,313 @@ export default function Vaults() {
         fetchAssets();
     }, []);
 
+    const filters = [
+        { key: 'ALL', label: 'ALL ASSETS' },
+        { key: 'STATUS_AUTHENTICATED', label: '[STATUS: AUTHENTICATED]' },
+        { key: 'STATUS_MINTED', label: '[STATUS: MINTED]' },
+        { key: 'CAT_WATCHES', label: '[CATEGORY: WATCHES]' },
+        { key: 'CAT_COLLECTIBLES', label: '[CATEGORY: SNEAKERS]' },
+        { key: 'CAT_JEWELRY', label: '[CATEGORY: JEWELRY]' },
+    ];
+
     return (
-        <div className="bg-black text-[#00FF00] selection:bg-[#00FF00] selection:text-black min-h-screen pt-24 pb-24 font-mono">
-            {/* Global CRT & Glow Styles */}
+        <>
+            {/* Scoped overrides — must win CSS specificity vs pages.css / globals.css */}
             <style dangerouslySetInnerHTML={{
                 __html: `
-                .crt-overlay {
+                .vaults-main {
+                    min-height: 100vh !important;
+                    background: #000 !important;
+                    color: #fff !important;
+                    padding-top: 8rem !important;
+                    padding-bottom: 5rem !important;
+                    padding-left: 1.5rem !important;
+                    padding-right: 1.5rem !important;
+                    width: 100% !important;
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                }
+                .vaults-crt {
                     position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+                    top: 0; left: 0;
+                    width: 100vw; height: 100vh;
+                    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%);
                     background-size: 100% 3px;
                     pointer-events: none;
                     z-index: 9999;
                     opacity: 0.15;
                 }
-                .text-glow {
-                    text-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.4);
+                .vaults-header {
+                    text-align: center !important;
+                    margin-bottom: 2rem !important;
+                }
+                .vaults-header h1 {
+                    font-size: clamp(2.5rem, 5vw, 3.75rem) !important;
+                    font-weight: 900 !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: -0.04em !important;
+                    color: #00FF00 !important;
+                    text-shadow: 0 0 10px rgba(0,255,0,0.8), 0 0 20px rgba(0,255,0,0.4) !important;
+                    margin-bottom: 1rem !important;
+                }
+                .vaults-header p {
+                    color: #00FF00 !important;
+                    font-size: 0.875rem !important;
+                    letter-spacing: 0.1em !important;
+                    text-transform: uppercase !important;
+                }
+                .vaults-filters {
+                    display: flex !important;
+                    flex-wrap: wrap !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    gap: 1rem !important;
+                    margin-top: 2rem !important;
+                    margin-bottom: 3rem !important;
+                }
+                .vaults-filter-btn {
+                    padding: 0.5rem 1rem !important;
+                    background: #000 !important;
+                    border: 1px solid #00FF00 !important;
+                    color: #00FF00 !important;
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                    font-size: 0.8rem !important;
+                    text-transform: uppercase !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s ease !important;
+                }
+                .vaults-filter-btn:hover,
+                .vaults-filter-btn.active {
+                    background: #00FF00 !important;
+                    color: #000 !important;
+                }
+                .vaults-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(4, 1fr) !important;
+                    gap: 2rem !important;
+                    max-width: 80rem !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    width: 100% !important;
+                }
+                @media (max-width: 1280px) {
+                    .vaults-grid { grid-template-columns: repeat(3, 1fr) !important; }
+                }
+                @media (max-width: 1024px) {
+                    .vaults-grid { grid-template-columns: repeat(2, 1fr) !important; }
+                }
+                @media (max-width: 640px) {
+                    .vaults-grid { grid-template-columns: 1fr !important; }
+                }
+                .vault-card-link {
+                    display: block !important;
+                    text-decoration: none !important;
+                }
+                .vault-card-wrap {
+                    position: relative !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    background: #000 !important;
+                    border: 1px solid #00FF00 !important;
+                    padding: 1rem !important;
+                    overflow: hidden !important;
+                    transition: background 0.2s ease !important;
+                }
+                .vault-card-wrap:hover {
+                    background: #0a0a0a !important;
+                }
+                .vault-hud { position: absolute !important; width: 1rem !important; height: 1rem !important; }
+                .vault-hud--tl { top: 0; left: 0; border-top: 2px solid #00FF00; border-left: 2px solid #00FF00; }
+                .vault-hud--tr { top: 0; right: 0; border-top: 2px solid #00FF00; border-right: 2px solid #00FF00; }
+                .vault-hud--bl { bottom: 0; left: 0; border-bottom: 2px solid #00FF00; border-left: 2px solid #00FF00; }
+                .vault-hud--br { bottom: 0; right: 0; border-bottom: 2px solid #00FF00; border-right: 2px solid #00FF00; }
+                .vault-card-badge {
+                    font-size: 10px !important;
+                    letter-spacing: 0.1em !important;
+                    margin-bottom: 0.75rem !important;
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    text-transform: uppercase !important;
+                }
+                .vault-card-image {
+                    width: 100% !important;
+                    aspect-ratio: 1 / 1 !important;
+                    background: transparent !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    overflow: hidden !important;
+                    margin-bottom: 1rem !important;
+                }
+                .vault-card-image img {
+                    object-fit: contain !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    mix-blend-mode: screen !important;
+                    transition: filter 0.2s ease !important;
+                }
+                .vault-card-wrap:hover .vault-card-image img {
+                    filter: brightness(1.1) !important;
+                }
+                .vault-card-details {
+                    display: flex !important;
+                    flex-direction: column !important;
+                    gap: 0.5rem !important;
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                    font-size: 0.875rem !important;
+                    border-top: 1px solid #333 !important;
+                    padding-top: 1rem !important;
+                }
+                .vault-card-details h3 {
+                    color: #fff !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.05em !important;
+                    text-transform: uppercase !important;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+                    white-space: nowrap !important;
+                    margin: 0 !important;
+                }
+                .vault-card-ticker {
+                    color: #666 !important;
+                    font-size: 10px !important;
+                    letter-spacing: 0.1em !important;
+                    text-transform: uppercase !important;
+                }
+                .vault-card-price-row {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: flex-end !important;
+                    margin-top: 0.5rem !important;
+                }
+                .vault-card-price-label {
+                    font-size: 10px !important;
+                    letter-spacing: 0.1em !important;
+                    color: #666 !important;
+                }
+                .vault-card-price-value {
+                    font-size: 1.125rem !important;
+                    font-weight: 700 !important;
+                    color: #00FF00 !important;
+                }
+                .vault-card-progress-labels {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    font-size: 8px !important;
+                    color: #666 !important;
+                    letter-spacing: 0.1em !important;
+                    margin-top: 0.5rem !important;
+                    margin-bottom: 0.25rem !important;
+                    text-transform: uppercase !important;
+                }
+                .vault-card-progress-track {
+                    width: 100% !important;
+                    height: 4px !important;
+                    background: #111 !important;
+                }
+                .vault-card-progress-fill {
+                    height: 100% !important;
+                    background: #00FF00 !important;
+                }
+                .vault-card-empty {
+                    grid-column: 1 / -1 !important;
+                    padding: 6rem 0 !important;
+                    text-align: center !important;
+                    letter-spacing: 0.1em !important;
                 }
             `}} />
 
-            <div className="crt-overlay"></div>
+            <main className="vaults-main">
+                <div className="vaults-crt"></div>
 
-            <div className="max-w-[1400px] mx-auto px-8 relative z-10">
-                {/* Header Section */}
-                <div className="text-center mb-16">
-                    <h1 className="text-5xl md:text-6xl font-black mb-4 uppercase tracking-tighter" style={{ fontFamily: 'var(--font-cinzel)' }}>
-                        EXPLORE SECURED VAULTS.
-                    </h1>
-                    <p className="text-[#00FF00] text-sm tracking-widest uppercase flex justify-center items-center gap-2">
-                        <span className="text-[#00FF00] font-bold">&gt;</span> Browse verified luxury assets available for fractional investment.
-                    </p>
+                {/* Header */}
+                <div className="vaults-header">
+                    <h1>EXPLORE SECURED VAULTS.</h1>
+                    <p>&gt; Browse verified luxury assets available for fractional investment.</p>
                 </div>
 
-                {/* Filter Bar (Ghost Buttons) */}
-                <div className="flex flex-wrap justify-center gap-4 mb-16 font-mono text-xs tracking-widest uppercase">
-                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'ALL' ? 'border-[#00FF00] text-[#00FF00] bg-[#00FF00]/10' : 'border-[#00FF00]/30 text-[#00FF00]/60 hover:border-[#00FF00]/70 hover:text-[#00FF00]'}`} onClick={() => setActiveFilter('ALL')}>ALL ASSETS</button>
-                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'STATUS_AUTHENTICATED' ? 'border-[#00FF00] text-[#00FF00] bg-[#00FF00]/10' : 'border-[#00FF00]/30 text-[#00FF00]/60 hover:border-[#00FF00]/70 hover:text-[#00FF00]'}`} onClick={() => setActiveFilter('STATUS_AUTHENTICATED')}>[STATUS: AUTHENTICATED]</button>
-                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'STATUS_MINTED' ? 'border-[#00FF00] text-[#00FF00] bg-[#00FF00]/10' : 'border-[#00FF00]/30 text-[#00FF00]/60 hover:border-[#00FF00]/70 hover:text-[#00FF00]'}`} onClick={() => setActiveFilter('STATUS_MINTED')}>[STATUS: MINTED]</button>
-                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'CAT_WATCHES' ? 'border-[#00FF00] text-[#00FF00] bg-[#00FF00]/10' : 'border-[#00FF00]/30 text-[#00FF00]/60 hover:border-[#00FF00]/70 hover:text-[#00FF00]'}`} onClick={() => setActiveFilter('CAT_WATCHES')}>[CATEGORY: WATCHES]</button>
-                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'CAT_COLLECTIBLES' ? 'border-[#00FF00] text-[#00FF00] bg-[#00FF00]/10' : 'border-[#00FF00]/30 text-[#00FF00]/60 hover:border-[#00FF00]/70 hover:text-[#00FF00]'}`} onClick={() => setActiveFilter('CAT_COLLECTIBLES')}>[CATEGORY: SNEAKERS]</button>
-                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'CAT_JEWELRY' ? 'border-[#00FF00] text-[#00FF00] bg-[#00FF00]/10' : 'border-[#00FF00]/30 text-[#00FF00]/60 hover:border-[#00FF00]/70 hover:text-[#00FF00]'}`} onClick={() => setActiveFilter('CAT_JEWELRY')}>[CATEGORY: JEWELRY]</button>
+                {/* Filter Bar */}
+                <div className="vaults-filters">
+                    {filters.map(f => (
+                        <button
+                            key={f.key}
+                            onClick={() => setActiveFilter(f.key)}
+                            className={`vaults-filter-btn ${activeFilter === f.key ? 'active' : ''}`}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Vault Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="vaults-grid">
                     {isLoading ? (
-                        <div className="col-span-full py-24 text-center font-mono text-[#00FF00] tracking-widest animate-pulse">
+                        <div className="vault-card-empty" style={{ color: '#00FF00' }}>
                             &gt; SYNCING_VAULT_PROTOCOL...
                         </div>
                     ) : filteredAssets.length === 0 ? (
-                        <div className="col-span-full py-24 text-center font-mono text-[#888] tracking-widest">
+                        <div className="vault-card-empty" style={{ color: '#888' }}>
                             NO ASSETS DETECTED MATCHING CURRENT FILTER.
                         </div>
                     ) : (
                         filteredAssets.map((asset) => (
-                            <Link href={`/asset/${asset.id}`} key={asset.id} className="group relative bg-[#050505] border border-[#00FF00] p-6 hover:bg-[#0a0a0a] transition-colors overflow-hidden block">
-                                {/* HUD Corners */}
-                                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#00FF00]"></div>
-                                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-[#00FF00]"></div>
-                                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-[#00FF00]"></div>
-                                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#00FF00]"></div>
+                            <Link href={`/asset/${asset.id}`} key={asset.id} className="vault-card-link">
+                                <div className="vault-card-wrap">
+                                    {/* HUD Corners */}
+                                    <div className="vault-hud vault-hud--tl"></div>
+                                    <div className="vault-hud vault-hud--tr"></div>
+                                    <div className="vault-hud vault-hud--bl"></div>
+                                    <div className="vault-hud vault-hud--br"></div>
 
-                                {/* Status Badge */}
-                                <div className="text-[10px] tracking-widest mb-4 flex justify-between uppercase">
-                                    <span className={asset.status === 'MINTED' ? 'text-yellow-400' : 'text-[#00FF00]'}>
-                                        [STATUS: {asset.status}]
-                                    </span>
-                                    {asset.status === 'MINTED' && <span className="text-yellow-400">[100 VERIFIED]</span>}
-                                </div>
-
-                                {/* Image Centered */}
-                                <div className="h-[250px] w-full flex items-center justify-center mb-6">
-                                    {asset.imagePath ? (
-                                        <img src={asset.imagePath.split(',')[0]} alt={asset.name} className="max-h-full max-w-full object-contain filter group-hover:brightness-110 transition-all drop-shadow-[0_0_15px_rgba(0,255,0,0.15)]" />
-                                    ) : (
-                                        <div className="text-[#333] text-xs tracking-widest">[NO_IMG_DATA]</div>
-                                    )}
-                                </div>
-
-                                {/* Details */}
-                                <div className="border-t border-[#333] pt-4">
-                                    <h3 className="text-white text-sm font-bold tracking-wider mb-2 uppercase truncate" style={{ fontFamily: 'var(--font-inter)' }}>{asset.name}</h3>
-                                    <div className="text-[#666] text-[10px] tracking-widest mb-4 uppercase">
-                                        ${asset.category.slice(0, 2)}-{asset.id.slice(0, 3)}
+                                    {/* Status Badge */}
+                                    <div className="vault-card-badge">
+                                        <span style={{ color: asset.status === 'MINTED' ? '#facc15' : '#00FF00' }}>
+                                            [STATUS: {asset.status}]
+                                        </span>
+                                        {asset.authenticityScore && (
+                                            <span style={{ color: '#facc15' }}>[{asset.authenticityScore} VERIFIED]</span>
+                                        )}
                                     </div>
 
-                                    <div className="flex justify-between items-end">
-                                        <div className="text-[10px] tracking-widest text-[#666]">
-                                            SHARE_PRICE:
+                                    {/* Image */}
+                                    <div className="vault-card-image">
+                                        {asset.imagePath ? (
+                                            <img
+                                                src={asset.imagePath.split(',')[0]}
+                                                alt={asset.name}
+                                            />
+                                        ) : (
+                                            <div style={{ color: '#333', fontSize: '12px', letterSpacing: '0.1em' }}>[NO_IMG_DATA]</div>
+                                        )}
+                                    </div>
+
+                                    {/* Details */}
+                                    <div className="vault-card-details">
+                                        <h3>{asset.name}</h3>
+                                        <div className="vault-card-ticker">
+                                            ${asset.category.slice(0, 3)}-{asset.id.slice(0, 3).toUpperCase()}
                                         </div>
-                                        <div className="text-lg font-bold text-[#00FF00]">
-                                            {asset.pricePerShare ? `$${asset.pricePerShare.toFixed(2)}` : 'TBD'}
-                                        </div>
-                                    </div>
 
-                                    {/* Fake Progress Bar to emulate the screenshot */}
-                                    <div className="flex justify-between text-[8px] text-[#666] tracking-widest mt-4 mb-2 uppercase">
-                                        <span>0 sold</span>
-                                        <span>{asset.totalShares ? (asset.totalShares).toLocaleString() : 'N/A'} total</span>
-                                    </div>
-                                    <div className="w-full h-1 bg-[#111]">
-                                        <div className="h-full bg-[#00FF00]" style={{ width: '5%' }}></div>
+                                        <div className="vault-card-price-row">
+                                            <span className="vault-card-price-label">SHARE_PRICE:</span>
+                                            <span className="vault-card-price-value">
+                                                {asset.pricePerShare ? `$${asset.pricePerShare.toFixed(2)}` : 'TBD'}
+                                            </span>
+                                        </div>
+
+                                        <div className="vault-card-progress-labels">
+                                            <span>0 SOLD</span>
+                                            <span>{asset.totalShares ? asset.totalShares.toLocaleString() : 'N/A'} TOTAL</span>
+                                        </div>
+                                        <div className="vault-card-progress-track">
+                                            <div className="vault-card-progress-fill" style={{ width: '5%' }}></div>
+                                        </div>
                                     </div>
                                 </div>
                             </Link>
                         ))
                     )}
                 </div>
-            </div>
-        </div>
+            </main>
+        </>
     );
 }
