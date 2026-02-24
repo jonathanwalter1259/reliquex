@@ -39,73 +39,130 @@ export default function Vaults() {
     }, []);
 
     return (
-        <main className="page-wrap reveal">
-            <div className="container">
-                <div className="page-header">
-                    <h1 className="page-header__title">EXPLORE SECURED VAULTS.</h1>
-                    <p className="page-header__sub">&gt; Browse verified luxury assets available for fractional investment.</p>
+        <div className="vault-manager relative pt-16 md:pt-24 pb-24 text-[#00ff41] selection:bg-[#00ff41] selection:text-black min-h-screen">
+            {/* Global CRT & Glow Styles */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                .crt-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+                    background-size: 100% 3px;
+                    pointer-events: none;
+                    z-index: 9999;
+                    opacity: 0.15;
+                }
+                .text-glow {
+                    text-shadow: 0 0 10px rgba(0, 255, 65, 0.8), 0 0 20px rgba(0, 255, 65, 0.4);
+                }
+                .box-glow {
+                    box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 20px rgba(0, 255, 65, 0.05);
+                }
+            `}} />
+
+            <div className="crt-overlay"></div>
+
+            <div className="max-w-[90rem] mx-auto px-6 relative z-10">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-[#00ff41]/30 pb-6 relative">
+                    <div className="absolute bottom-0 left-0 w-32 h-[1px] bg-[#00ff41] shadow-[0_0_10px_#00ff41]"></div>
+                    <div>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-[0.2em] mb-2 text-glow uppercase">
+                            NEXUS_MARKET
+                        </h1>
+                        <h2 className="text-[#00ff41]/60 font-mono text-sm tracking-[0.3em] uppercase flex items-center gap-3">
+                            <span className="w-2 h-2 bg-[#00ff41] animate-pulse"></span>
+                            ACTIVE DIRECTORY :: {filteredAssets.length} PROTOCOLS ACCESSIBLE
+                        </h2>
+                    </div>
                 </div>
 
                 {/* Filter Bar */}
-                <div className="vault-filters">
-                    <button className={`vault-filter ${activeFilter === 'ALL' ? 'active border-[#00ff41] text-[#00ff41]' : ''}`} onClick={() => setActiveFilter('ALL')}>ALL ASSETS</button>
-                    <button className={`vault-filter ${activeFilter === 'STATUS_AUTHENTICATED' ? 'active border-[#00ff41] text-[#00ff41]' : ''}`} onClick={() => setActiveFilter('STATUS_AUTHENTICATED')}>[STATUS: AUTHENTICATED]</button>
-                    <button className={`vault-filter ${activeFilter === 'STATUS_MINTED' ? 'active border-[#00ff41] text-[#00ff41]' : ''}`} onClick={() => setActiveFilter('STATUS_MINTED')}>[STATUS: MINTED]</button>
-                    <button className={`vault-filter ${activeFilter === 'CAT_WATCHES' ? 'active border-[#00ff41] text-[#00ff41]' : ''}`} onClick={() => setActiveFilter('CAT_WATCHES')}>[CATEGORY: WATCHES]</button>
-                    <button className={`vault-filter ${activeFilter === 'CAT_ART' ? 'active border-[#00ff41] text-[#00ff41]' : ''}`} onClick={() => setActiveFilter('CAT_ART')}>[CATEGORY: ART]</button>
-                    <button className={`vault-filter ${activeFilter === 'CAT_JEWELRY' ? 'active border-[#00ff41] text-[#00ff41]' : ''}`} onClick={() => setActiveFilter('CAT_JEWELRY')}>[CATEGORY: JEWELRY]</button>
-                    <button className={`vault-filter ${activeFilter === 'CAT_COLLECTIBLES' ? 'active border-[#00ff41] text-[#00ff41]' : ''}`} onClick={() => setActiveFilter('CAT_COLLECTIBLES')}>[CATEGORY: COLLECTIBLES]</button>
+                <div className="flex flex-wrap gap-4 mb-8 font-mono text-xs tracking-widest uppercase">
+                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'ALL' ? 'border-[#00ff41] bg-[#00ff41]/20 text-glow' : 'border-[#00ff41]/30 text-[#00ff41]/60 hover:border-[#00ff41]/70 hover:text-[#00ff41]'}`} onClick={() => setActiveFilter('ALL')}>[ALL_ASSETS]</button>
+                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'STATUS_AUTHENTICATED' ? 'border-[#00ff41] bg-[#00ff41]/20 text-glow' : 'border-[#00ff41]/30 text-[#00ff41]/60 hover:border-[#00ff41]/70 hover:text-[#00ff41]'}`} onClick={() => setActiveFilter('STATUS_AUTHENTICATED')}>[AUTHENTICATED]</button>
+                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'STATUS_MINTED' ? 'border-[#00ff41] bg-[#00ff41]/20 text-glow' : 'border-[#00ff41]/30 text-[#00ff41]/60 hover:border-[#00ff41]/70 hover:text-[#00ff41]'}`} onClick={() => setActiveFilter('STATUS_MINTED')}>[MINTED]</button>
+                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'CAT_WATCHES' ? 'border-[#00ff41] bg-[#00ff41]/20 text-glow' : 'border-[#00ff41]/30 text-[#00ff41]/60 hover:border-[#00ff41]/70 hover:text-[#00ff41]'}`} onClick={() => setActiveFilter('CAT_WATCHES')}>[WATCHES]</button>
+                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'CAT_ART' ? 'border-[#00ff41] bg-[#00ff41]/20 text-glow' : 'border-[#00ff41]/30 text-[#00ff41]/60 hover:border-[#00ff41]/70 hover:text-[#00ff41]'}`} onClick={() => setActiveFilter('CAT_ART')}>[ART]</button>
+                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'CAT_JEWELRY' ? 'border-[#00ff41] bg-[#00ff41]/20 text-glow' : 'border-[#00ff41]/30 text-[#00ff41]/60 hover:border-[#00ff41]/70 hover:text-[#00ff41]'}`} onClick={() => setActiveFilter('CAT_JEWELRY')}>[JEWELRY]</button>
+                    <button className={`px-4 py-2 border transition-all ${activeFilter === 'CAT_COLLECTIBLES' ? 'border-[#00ff41] bg-[#00ff41]/20 text-glow' : 'border-[#00ff41]/30 text-[#00ff41]/60 hover:border-[#00ff41]/70 hover:text-[#00ff41]'}`} onClick={() => setActiveFilter('CAT_COLLECTIBLES')}>[COLLECTIBLES]</button>
                 </div>
 
-                {/* Vault Grid */}
-                <div className="vault-grid">
-                    {isLoading ? (
-                        <div className="col-span-full py-12 text-center font-mono text-[#00ff41] tracking-widest animate-pulse">
-                            &gt; SYNCING_VAULT_PROTOCOL...
-                        </div>
-                    ) : filteredAssets.length === 0 ? (
-                        <div className="col-span-full py-12 text-center font-mono text-[#888] tracking-widest">
-                            NO ASSETS DETECTED MATCHING CURRENT FILTER.
-                        </div>
-                    ) : (
-                        filteredAssets.map((asset) => (
-                            <Link href={`/asset/${asset.id}`} key={asset.id} className="vault-card block hover:cursor-pointer transition-transform hover:-translate-y-2">
-                                <div className="hud-corner hud-corner--tl"></div>
-                                <div className="hud-corner hud-corner--tr"></div>
-                                <div className="hud-corner hud-corner--bl"></div>
-                                <div className="hud-corner hud-corner--br"></div>
-                                <div className="vault-card__img-wrap border-b border-[#333]">
-                                    <span className="vault-card__badge">[{asset.status}]</span>
-                                    {asset.imagePath ? (
-                                        <img src={asset.imagePath.split(',')[0]} alt={asset.name} className="vault-card__img object-cover w-full h-full" style={{ maxHeight: '300px' }} />
-                                    ) : (
-                                        <div className="w-full h-[300px] flex items-center justify-center text-[#333] font-mono text-sm tracking-widest">
-                                            [NO_IMAGE_DATA]
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="vault-card__body">
-                                    <div className="vault-card__name text-white">{asset.name}</div>
-                                    <div className="vault-card__ticker text-[#888]">${asset.category.slice(0, 3)}-{asset.id.slice(0, 4)}</div>
-                                    <div className="vault-card__price-row mt-4">
-                                        <span className="vault-card__price-label text-[#888]">SHARE_PRICE:</span>
-                                        <span className="vault-card__price text-[#00ff41]">{asset.pricePerShare ? `$${asset.pricePerShare.toFixed(2)}` : 'TBD'}</span>
-                                    </div>
-                                    <div className="vault-card__progress mt-4">
-                                        <div className="vault-card__progress-labels text-[#888] text-xs">
-                                            <span>0 sold</span>
-                                            <span>{asset.totalShares ? asset.totalShares.toLocaleString() : 'N/A'} total</span>
-                                        </div>
-                                        <div className="vault-card__progress-track mt-2 h-1 bg-[#111]">
-                                            <div className="vault-card__progress-fill h-full bg-[#333]" style={{ width: '0%' }}></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))
-                    )}
+                {/* Data Grid Section */}
+                <div className="relative box-glow bg-black/40 backdrop-blur-xl border border-[#00ff41]/20">
+                    <div className="absolute -top-[1px] -left-[1px] w-8 h-8 border-t-2 border-l-2 border-[#00ff41]"></div>
+                    <div className="absolute -top-[1px] -right-[1px] w-8 h-8 border-t-2 border-r-2 border-[#00ff41]"></div>
+                    <div className="absolute -bottom-[1px] -left-[1px] w-8 h-8 border-b-2 border-l-2 border-[#00ff41]"></div>
+                    <div className="absolute -bottom-[1px] -right-[1px] w-8 h-8 border-b-2 border-r-2 border-[#00ff41]"></div>
+
+                    <div className="overflow-x-auto p-1">
+                        <table className="w-full text-left font-mono text-sm border-collapse uppercase">
+                            <thead>
+                                <tr className="bg-[#00ff41]/5 border-b-2 border-[#00ff41]/50">
+                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41] text-xs">SYS_ID</th>
+                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41] text-xs">NEXUS_DESIGNATION</th>
+                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41] text-xs">CLASS</th>
+                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41] text-xs">VALUATION</th>
+                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41] text-xs text-right">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-[#eee]">
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan={5} className="p-16 text-center text-[#00ff41] animate-pulse tracking-widest">
+                                            &gt; SYNCING_VAULT_PROTOCOL...
+                                        </td>
+                                    </tr>
+                                ) : filteredAssets.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="p-16 text-center text-[#888] tracking-widest">
+                                            NO ASSETS DETECTED MATCHING CURRENT FILTER.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredAssets.map((asset) => (
+                                        <tr key={asset.id} className="border-b border-[#00ff41]/10 hover:bg-gradient-to-r hover:from-[#00ff41]/10 hover:to-transparent transition-all duration-200 group">
+                                            <td className="p-6 text-[#00ff41]/50 text-xs w-40 truncate">
+                                                {asset.id.slice(0, 8)}...
+                                            </td>
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-4">
+                                                    {asset.imagePath ? (
+                                                        <img src={asset.imagePath.split(',')[0]} alt="Asset" className="w-12 h-12 object-cover border border-[#00ff41]/30 group-hover:border-[#00ff41] transition-colors" />
+                                                    ) : (
+                                                        <div className="w-12 h-12 bg-black border border-[#00ff41]/20 flex items-center justify-center text-[8px] text-[#00ff41]/40">NO_IMG</div>
+                                                    )}
+                                                    <span className="font-bold tracking-wider group-hover:text-glow transition-all">{asset.name}</span>
+                                                    {asset.status === 'MINTED' && <span className="ml-2 px-2 py-0.5 text-[10px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/30">MINTED</span>}
+                                                </div>
+                                            </td>
+                                            <td className="p-6 tracking-widest text-xs">
+                                                <span className="px-3 py-1 border border-[#00ff41]/30 bg-[#00ff41]/5 text-[#00ff41]">
+                                                    {asset.category}
+                                                </span>
+                                            </td>
+                                            <td className="p-6 tracking-wider">
+                                                {asset.pricePerShare ? <span className="text-white">${asset.pricePerShare.toFixed(2)}</span> : <span className="text-[#00ff41]/40">UNPRICED</span>}
+                                            </td>
+                                            <td className="p-6 text-right space-x-4">
+                                                <Link
+                                                    href={`/asset/${asset.id}`}
+                                                    className="text-[#00ff41]/70 hover:text-white hover:text-glow transition-all tracking-[0.1em] text-xs relative before:content-['['] after:content-[']'] hover:before:text-[#00ff41] hover:after:text-[#00ff41] before:mr-1 after:ml-1 before:transition-colors after:transition-colors"
+                                                >
+                                                    VIEW_DATA
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
