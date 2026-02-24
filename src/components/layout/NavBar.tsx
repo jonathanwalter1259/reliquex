@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useAccount, useSignMessage } from 'wagmi';
+import { useAccount, useSignMessage, useChainId } from 'wagmi';
+import { SiweMessage } from 'siwe';
 
 export default function NavBar() {
     const pathname = usePathname();
@@ -12,9 +13,11 @@ export default function NavBar() {
     const [mounted, setMounted] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
+    const [authError, setAuthError] = useState<string | null>(null);
 
     // Wagmi hooks
     const { address, isConnected } = useAccount();
+    const chainId = useChainId();
     const { signMessageAsync } = useSignMessage();
 
     useEffect(() => {
@@ -25,55 +28,71 @@ export default function NavBar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Check existing session on mount or connection change
     useEffect(() => {
-        const checkAuth = async () => {
-            if (isConnected && address && !isAuthenticated && !isAuthenticating) {
-                setIsAuthenticating(true);
+        const checkExistingSession = async () => {
+            if (isConnected && address) {
                 try {
-                    // 1. Check if session already active for this address
                     const meRes = await fetch('/api/auth/me');
                     if (meRes.ok) {
                         const meData = await meRes.json();
                         if (meData.walletAddress === address.toLowerCase()) {
                             setIsAuthenticated(true);
-                            setIsAuthenticating(false);
                             return;
                         }
                     }
-
-                    // 2. If not, trigger SIWE flow
-                    const nonceRes = await fetch('/api/auth/nonce');
-                    const nonce = await nonceRes.text();
-
-                    const domain = window.location.host;
-                    const origin = window.location.origin;
-
-                    const message = `${domain} wants you to sign in with your Ethereum account:\n${address}\n\nSign in to securely authenticate your wallet for the ReliqueX protocol.\n\nURI: ${origin}\nVersion: 1\nChain ID: 56\nNonce: ${nonce}\nIssued At: ${new Date().toISOString()}`;
-
-                    const signature = await signMessageAsync({ message });
-
-                    const verifyRes = await fetch('/api/auth/verify', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message, signature })
-                    });
-
-                    if (verifyRes.ok) {
-                        setIsAuthenticated(true);
-                    }
                 } catch (error) {
-                    console.error("SIWE Authentication failed:", error);
-                } finally {
-                    setIsAuthenticating(false);
+                    console.error("Session check failed", error);
                 }
             } else if (!isConnected && isAuthenticated) {
+                // User disconnected their wallet, clear session
                 setIsAuthenticated(false);
                 fetch('/api/auth/me', { method: 'DELETE' }).catch(console.error);
             }
         };
+        checkExistingSession();
+    }, [isConnected, address]);
 
-        checkAuth();
-    }, [isConnected, address, isAuthenticated, signMessageAsync, isAuthenticating]);
+    // Manual Authentication Flow
+    const handleAuthenticate = async () => {
+        if (!isConnected || !address || isAuthenticating) return;
+        setIsAuthenticating(true);
+        setAuthError(null);
+        try {
+            const nonceRes = await fetch('/api/auth/nonce');
+            const nonce = await nonceRes.text();
+
+            const message = new SiweMessage({
+                domain: window.location.host,
+                address,
+                statement: 'Sign in to securely authenticate your wallet for the ReliqueX protocol.',
+                uri: window.location.origin,
+                version: '1',
+                chainId,
+                nonce,
+            }).prepareMessage();
+
+            const signature = await signMessageAsync({ message });
+
+            const verifyRes = await fetch('/api/auth/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, signature })
+            });
+
+            if (verifyRes.ok) {
+                setIsAuthenticated(true);
+            } else {
+                const errData = await verifyRes.json();
+                setAuthError(errData.error || 'Verification failed');
+            }
+        } catch (error: any) {
+            console.error("SIWE Manual Auth Failed:", error);
+            setAuthError(error?.message || 'Signature rejected');
+        } finally {
+            setIsAuthenticating(false);
+        }
+    };
 
     return (
         <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`} id="navbar">
@@ -96,7 +115,18 @@ export default function NavBar() {
 
                 {mounted && (
                     <div style={{ marginLeft: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        {isAuthenticating && <span className="text-[#00ff41] text-xs font-mono animate-pulse uppercase tracking-widest">[AWAITING_SIG]</span>}
+                        {isConnected && !isAuthenticated && (
+                            <div className="flex flex-col items-end gap-1">
+                                <button
+                                    onClick={handleAuthenticate}
+                                    disabled={isAuthenticating}
+                                    className="font-mono text-xs tracking-widest px-4 py-2 border border-[#00ff41] text-[#00ff41] hover:bg-[#00ff41] hover:text-black transition-colors"
+                                >
+                                    {isAuthenticating ? '[SIGNING...]' : 'AUTHENTICATE'}
+                                </button>
+                                {authError && <span className="text-red-500 text-[10px] uppercase font-mono absolute top-20 right-4">{authError}</span>}
+                            </div>
+                        )}
                         <appkit-button />
                     </div>
                 )}
