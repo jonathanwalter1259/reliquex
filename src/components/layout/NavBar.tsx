@@ -9,6 +9,7 @@ export default function NavBar() {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     // Wagmi hooks
     const { address, isConnected } = useAccount();
@@ -16,6 +17,7 @@ export default function NavBar() {
     const { disconnect } = useDisconnect();
 
     useEffect(() => {
+        setMounted(true);
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 80);
         };
@@ -49,9 +51,13 @@ export default function NavBar() {
                 <div className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`} id="navLinks">
                     <Link href="/" className={`nav-link ${pathname === '/' ? 'active' : ''}`}>HOME</Link>
                     <Link href="/vaults" className={`nav-link ${pathname === '/vaults' ? 'active' : ''}`}>VAULTS</Link>
-                    <Link href="/submit" className={`nav-link ${pathname === '/submit' ? 'active' : ''}`}>SUBMIT ASSET</Link>
+                    {mounted && isConnected && (
+                        <Link href="/submit" className={`nav-link ${pathname === '/submit' ? 'active' : ''}`}>SUBMIT ASSET</Link>
+                    )}
                     <Link href="/whitepaper" className={`nav-link ${pathname === '/whitepaper' ? 'active' : ''}`}>WHITEPAPER</Link>
-                    <Link href="/dashboard" className={`nav-link ${pathname === '/dashboard' ? 'active' : ''}`}>DASHBOARD</Link>
+                    {mounted && isConnected && (
+                        <Link href="/dashboard" className={`nav-link ${pathname === '/dashboard' ? 'active' : ''}`}>DASHBOARD</Link>
+                    )}
                 </div>
 
                 <button className="btn-connect" id="connectWallet" onClick={handleConnectClick}>
