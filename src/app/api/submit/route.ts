@@ -24,7 +24,7 @@ export async function POST(req: Request) {
             data: {
                 name: `${brand} ${model}`,
                 description: description,
-                category: category || 'UNCATEGORIZED',
+                category: category || 'COLLECTIBLES',
                 imagePath: imagePath,
                 submitterWallet: user.walletAddress,
             },

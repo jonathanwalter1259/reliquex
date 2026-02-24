@@ -105,12 +105,12 @@ export default function Submit() {
                             <label className="form-label">// ASSET_CATEGORY:</label>
                             <select name="category" value={formData.category} onChange={handleChange} className="form-select" required>
                                 <option value="" disabled>Select category...</option>
-                                <option value="watches">Watches</option>
-                                <option value="sneakers">Sneakers</option>
-                                <option value="jewelry">Jewelry</option>
-                                <option value="handbags">Handbags</option>
-                                <option value="art">Fine Art</option>
-                                <option value="other">Other</option>
+                                <option value="WATCHES">Watches</option>
+                                <option value="COLLECTIBLES">Sneakers</option>
+                                <option value="JEWELRY">Jewelry</option>
+                                <option value="COLLECTIBLES">Handbags</option>
+                                <option value="ART">Fine Art</option>
+                                <option value="COLLECTIBLES">Other</option>
                             </select>
                         </div>
                         <div className="form-group">
