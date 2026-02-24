@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  walletAddress   String   @unique
+  role            Role     @default(USER)
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  submissions     Asset[]  @relation("SubmittedAssets")
+}
+
+model Asset {
+  id                  String      @id @default(cuid())
+  contractAssetId     Int?        @unique // The ID on the ERC-1155 contract once minted
+  name                String
+  description         String?
+  status              AssetStatus @default(PENDING_REVIEW)
+  physicalLocation    String?     // e.g., "Facility Alpha, Geneva"
+  authenticityScore   Int?        // Out of 100
+  totalShares         Int?        // Total fractional tokens to mint
+  submitterWallet     String
+  
+  // Relations
+  submitter           User        @relation("SubmittedAssets", fields: [submitterWallet], references: [walletAddress])
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AssetStatus {
+  PENDING_REVIEW
+  RECEIVED_IN_VAULT
+  AUTHENTICATED
+  MINTED
+}
