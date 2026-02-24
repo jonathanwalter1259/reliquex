@@ -438,6 +438,37 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                     </div>
                                 </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] tracking-[0.2em] text-[#00ff41]/80">PROTOCOL_STATUS</label>
+                                        <div className="relative">
+                                            <select
+                                                value={currentAsset.status || 'PENDING_REVIEW'}
+                                                onChange={e => setCurrentAsset({ ...currentAsset, status: e.target.value as any })}
+                                                className="w-full bg-black border border-[#00ff41]/30 text-[#00ff41] p-4 input-glow transition-all appearance-none cursor-pointer tracking-widest"
+                                            >
+                                                <option value="PENDING_REVIEW">PENDING_REVIEW</option>
+                                                <option value="RECEIVED_IN_VAULT">RECEIVED_IN_VAULT</option>
+                                                <option value="AUTHENTICATED">AUTHENTICATED</option>
+                                                <option value="MINTED" disabled>MINTED (ON-CHAIN)</option>
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#00ff41]/50">▼</div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] tracking-[0.2em] text-[#00ff41]/80">AUTHENTICITY_SCORE</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={currentAsset.authenticityScore || ''}
+                                            onChange={e => setCurrentAsset({ ...currentAsset, authenticityScore: parseInt(e.target.value) || undefined })}
+                                            className="w-full bg-black border border-[#00ff41]/30 text-white p-4 input-glow transition-all placeholder-[#333] font-mono"
+                                            placeholder="Score 0-100"
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
                                     <label className="block text-[10px] tracking-[0.2em] text-[#00ff41]/80">VISUAL_ENCRYPTION_PAYLOAD</label>
                                     <div className={`relative border border-[#00ff41]/30 ${isUploading ? 'bg-[#00ff41]/10 border-[#00ff41]' : 'bg-[#00ff41]/5 hover:bg-[#00ff41]/10 hover:border-[#00ff41]/60'} transition-all p-8 flex flex-col items-center justify-center text-center cursor-pointer min-h-[160px] group`}>
