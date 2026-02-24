@@ -16,6 +16,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
     const [currentAsset, setCurrentAsset] = useState<Partial<SerializedAsset>>({});
     const [systemLog, setSystemLog] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -79,6 +80,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
         const endpoint = isEditMode ? `/api/vault/${currentAsset.id}` : '/api/vault';
         const method = isEditMode ? 'PUT' : 'POST';
 
@@ -107,6 +109,8 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -158,10 +162,15 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                 </button>
             </div>
 
-            <div className="overflow-x-auto border border-[#333] bg-[#0a0a0a]">
+            <div className="overflow-x-auto border border-[#00ff41]/30 bg-[#0a0a0a] p-8 relative">
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff41]"></div>
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff41]"></div>
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00ff41]"></div>
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ff41]"></div>
+
                 <table className="w-full text-left font-mono text-sm border-collapse">
                     <thead>
-                        <tr className="border-b border-[#333] text-[#888]">
+                        <tr className="border-b border-[#00ff41] text-[#00ff41]">
                             <th className="p-4 font-normal tracking-wider">ASSET_ID</th>
                             <th className="p-4 font-normal tracking-wider">NAME</th>
                             <th className="p-4 font-normal tracking-wider">CATEGORY</th>
@@ -194,7 +203,11 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                         ))}
                         {assets.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="p-8 text-center text-[#555] italic">NO ASSETS FOUND IN VAULT</td>
+                                <td colSpan={5} className="p-12 text-center">
+                                    <span className="text-[#00ff41] font-mono tracking-widest uppercase animate-pulse">
+                                        &gt; [SYSTEM_ERROR]: VAULT_EMPTY. INITIATE_ASSET_ENTRY_SEQUENCE.
+                                    </span>
+                                </td>
                             </tr>
                         )}
                     </tbody>
@@ -203,8 +216,13 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
 
             {/* Crud Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="w-full max-w-2xl bg-[#0a0a0a] border border-[#333] p-8 shadow-[0_0_50px_rgba(0,255,65,0.05)]">
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                    <div className="w-full max-w-2xl bg-[#0a0a0a] border-2 border-[#00ff41] p-10 shadow-[0_0_30px_rgba(0,255,65,0.2)] relative">
+                        {/* Crosshairs */}
+                        <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-[#00ff41]"></div>
+                        <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-[#00ff41]"></div>
+                        <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-[#00ff41]"></div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-[#00ff41]"></div>
                         <div className="flex justify-between items-center mb-8 border-b border-[#333] pb-4">
                             <h3 className="text-2xl font-light tracking-[0.2em] text-white">
                                 {isEditMode ? '> MODIFY_ASSET' : '> INITIALIZE_ASSET'}
@@ -221,7 +239,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                         type="text"
                                         value={currentAsset.name || ''}
                                         onChange={e => setCurrentAsset({ ...currentAsset, name: e.target.value })}
-                                        className="w-full bg-transparent border border-[#333] text-white p-3 focus:border-[#00ff41] focus:outline-none transition-colors"
+                                        className="w-full bg-transparent border border-[#00ff41] text-white p-3 focus:shadow-[0_0_10px_rgba(0,255,65,0.4)] focus:outline-none transition-all placeholder-[#333]"
                                         placeholder="e.g. Patek Philippe Nautilus"
                                     />
                                 </div>
@@ -230,7 +248,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                     <select
                                         value={currentAsset.category || 'WATCHES'}
                                         onChange={e => setCurrentAsset({ ...currentAsset, category: e.target.value as any })}
-                                        className="w-full bg-[#0a0a0a] border border-[#333] text-white p-3 focus:border-[#00ff41] focus:outline-none appearance-none"
+                                        className="w-full bg-[#0a0a0a] border border-[#00ff41] text-white p-3 focus:shadow-[0_0_10px_rgba(0,255,65,0.4)] focus:outline-none appearance-none transition-all"
                                     >
                                         <option value="WATCHES">WATCHES</option>
                                         <option value="ART">ART</option>
@@ -248,7 +266,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                         step="0.01"
                                         value={currentAsset.pricePerShare || ''}
                                         onChange={e => setCurrentAsset({ ...currentAsset, pricePerShare: parseFloat(e.target.value) })}
-                                        className="w-full bg-transparent border border-[#333] text-white p-3 focus:border-[#00ff41] focus:outline-none transition-colors"
+                                        className="w-full bg-transparent border border-[#00ff41] text-white p-3 focus:shadow-[0_0_10px_rgba(0,255,65,0.4)] focus:outline-none transition-all placeholder-[#333]"
                                         placeholder="500.00"
                                     />
                                 </div>
@@ -258,7 +276,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                         type="number"
                                         value={currentAsset.totalShares || ''}
                                         onChange={e => setCurrentAsset({ ...currentAsset, totalShares: parseInt(e.target.value) })}
-                                        className="w-full bg-transparent border border-[#333] text-white p-3 focus:border-[#00ff41] focus:outline-none transition-colors"
+                                        className="w-full bg-transparent border border-[#00ff41] text-white p-3 focus:shadow-[0_0_10px_rgba(0,255,65,0.4)] focus:outline-none transition-all placeholder-[#333]"
                                         placeholder="1000"
                                     />
                                 </div>
@@ -266,7 +284,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
 
                             <div className="col-span-2">
                                 <label className="block text-[#888] tracking-widest mb-2">ASSET_MEDIA</label>
-                                <div className="relative border-2 border-dashed border-[#333] hover:border-[#00ff41] transition-colors p-6 flex flex-col items-center justify-center text-center cursor-pointer min-h-[120px]">
+                                <div className="relative border-2 border-dashed border-[#00ff41]/50 hover:border-[#00ff41] hover:shadow-[0_0_15px_rgba(0,255,65,0.2)] transition-all p-6 flex flex-col items-center justify-center text-center cursor-pointer min-h-[120px] bg-[#00ff41]/5">
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -303,17 +321,31 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                     rows={4}
                                     value={currentAsset.description || ''}
                                     onChange={e => setCurrentAsset({ ...currentAsset, description: e.target.value })}
-                                    className="w-full bg-transparent border border-[#333] text-white p-3 focus:border-[#00ff41] focus:outline-none transition-colors"
+                                    className="w-full bg-transparent border border-[#00ff41] text-white p-3 focus:shadow-[0_0_10px_rgba(0,255,65,0.4)] focus:outline-none transition-all placeholder-[#333]"
                                     placeholder="Asset provenance and details..."
                                 />
                             </div>
 
-                            <div className="pt-6 border-t border-[#333] flex justify-end space-x-4">
-                                <button type="button" onClick={closeModal} className="text-[#888] hover:text-white px-6 py-3 tracking-widest transition-colors">
+                            <div className="pt-8 flex justify-end space-x-4">
+                                <button type="button" onClick={closeModal} className="text-[#888] hover:text-white px-6 py-4 tracking-widest transition-colors border border-transparent hover:border-[#333]">
                                     CANCEL
                                 </button>
-                                <button type="submit" className="bg-[#00ff41] text-black px-8 py-3 tracking-widest hover:bg-white transition-colors">
-                                    {isEditMode ? 'COMMIT_UPDATE' : 'DEPLOY_ASSET'}
+                                <button
+                                    type="submit"
+                                    disabled={isSaving || isUploading}
+                                    className="relative overflow-hidden group bg-[#000] border-2 border-[#00ff41] text-[#00ff41] px-10 py-4 tracking-[0.2em] font-bold hover:bg-[#00ff41] hover:text-black hover:shadow-[0_0_30px_rgba(0,255,65,0.6)] transition-all duration-300 disabled:opacity-50 disabled:cursor-wait"
+                                >
+                                    {isSaving ? (
+                                        <span className="flex items-center gap-3">
+                                            <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            PROCESSING_
+                                        </span>
+                                    ) : (
+                                        isEditMode ? 'COMMIT_UPDATE' : 'DEPLOY_ASSET'
+                                    )}
                                 </button>
                             </div>
                         </form>
