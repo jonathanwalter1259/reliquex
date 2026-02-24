@@ -294,7 +294,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                         <td className="p-6">
                                             <div className="flex items-center gap-4">
                                                 {asset.imagePath ? (
-                                                    <img src={asset.imagePath} alt="Asset" className="w-12 h-12 object-cover border border-[#00ff41]/30 group-hover:border-[#00ff41] transition-colors" />
+                                                    <img src={asset.imagePath.split(',')[0]} alt="Asset" className="w-12 h-12 object-cover border border-[#00ff41]/30 group-hover:border-[#00ff41] transition-colors" />
                                                 ) : (
                                                     <div className="w-12 h-12 bg-black border border-[#00ff41]/20 flex items-center justify-center text-[8px] text-[#00ff41]/40">NO_IMG</div>
                                                 )}

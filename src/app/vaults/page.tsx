@@ -77,7 +77,7 @@ export default function Vaults() {
                                 <div className="vault-card__img-wrap border-b border-[#333]">
                                     <span className="vault-card__badge">[{asset.status}]</span>
                                     {asset.imagePath ? (
-                                        <img src={asset.imagePath} alt={asset.name} className="vault-card__img object-cover w-full h-full" style={{ maxHeight: '300px' }} />
+                                        <img src={asset.imagePath.split(',')[0]} alt={asset.name} className="vault-card__img object-cover w-full h-full" style={{ maxHeight: '300px' }} />
                                     ) : (
                                         <div className="w-full h-[300px] flex items-center justify-center text-[#333] font-mono text-sm tracking-widest">
                                             [NO_IMAGE_DATA]

@@ -71,7 +71,7 @@ export default function Marketplace() {
                                 <div className="hud-corner hud-corner--br"></div>
                                 <div className="vault-card__img-wrapper border-b border-[#333]">
                                     {asset.imagePath ? (
-                                        <img src={asset.imagePath} alt={asset.name} className="vault-card__img object-cover w-full h-full" />
+                                        <img src={asset.imagePath.split(',')[0]} alt={asset.name} className="vault-card__img object-cover w-full h-full" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-[#333] font-mono text-sm tracking-widest">
                                             [NO_IMAGE_DATA]
