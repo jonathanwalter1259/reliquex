@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Asset } from '@prisma/client';
 import { supabase } from '@/lib/supabaseClient';
+import { useWriteContract } from 'wagmi';
+import { reliqueXAddress, reliqueXABI } from '@/lib/web3/contract';
 
 export type SerializedAsset = Omit<Asset, 'createdAt' | 'updatedAt'> & {
     createdAt: string | Date;
@@ -19,7 +21,9 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
     const [systemLog, setSystemLog] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isMinting, setIsMinting] = useState<string | null>(null);
     const [mounted, setMounted] = useState(false);
+    const { writeContractAsync } = useWriteContract();
 
     useEffect(() => {
         setMounted(true);
@@ -136,6 +140,47 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
             } catch (error) {
                 console.error(error);
             }
+        }
+    };
+
+    const handleMint = async (asset: SerializedAsset) => {
+        setIsMinting(asset.id);
+        triggerLog(`INITIATING_MINT_FOR_ASSET_${asset.id.slice(0, 8)}`);
+        try {
+            const contractAssetId = Math.floor(Math.random() * 1000000);
+            const totalShares = BigInt(asset.totalShares || 100);
+            const pricePerShare = BigInt(asset.pricePerShare ? Math.floor(asset.pricePerShare * 1e18) : 10000000000000);
+
+            const hash = await writeContractAsync({
+                address: reliqueXAddress as `0x${string}`,
+                abi: reliqueXABI,
+                functionName: 'mintFractions',
+                args: [BigInt(contractAssetId), totalShares, pricePerShare],
+            });
+
+            const res = await fetch(`/api/vault/${asset.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    status: 'MINTED',
+                    contractAssetId: contractAssetId
+                }),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setAssets(assets.map(a => a.id === asset.id ? { ...a, status: 'MINTED', contractAssetId } : a));
+                triggerLog(`MINT_SUCCESSFUL_TX_${hash.substring(0, 10)}`);
+                router.refresh();
+            } else {
+                throw new Error(data.error);
+            }
+
+        } catch (error: any) {
+            console.error(error);
+            alert(`Mint failed: ${error.message}`);
+        } finally {
+            setIsMinting(null);
         }
     };
 
@@ -265,6 +310,15 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                             {asset.pricePerShare ? <span className="text-white">${asset.pricePerShare.toFixed(2)}</span> : <span className="text-[#00ff41]/40">UNPRICED</span>}
                                         </td>
                                         <td className="p-6 text-right space-x-4">
+                                            {asset.status === 'AUTHENTICATED' && !asset.contractAssetId && (
+                                                <button
+                                                    onClick={() => handleMint(asset)}
+                                                    disabled={isMinting === asset.id}
+                                                    className="text-yellow-400/80 hover:text-yellow-300 transition-all tracking-[0.1em] text-xs relative before:content-['['] after:content-[']'] hover:before:text-yellow-400 hover:after:text-yellow-400 before:mr-1 after:ml-1 before:transition-colors after:transition-colors"
+                                                >
+                                                    {isMinting === asset.id ? 'MINTING...' : 'MINT_ON_BSC'}
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => openModal(asset)}
                                                 className="text-[#00ff41]/70 hover:text-white hover:text-glow transition-all tracking-[0.1em] text-xs relative before:content-['['] after:content-[']'] hover:before:text-[#00ff41] hover:after:text-[#00ff41] before:mr-1 after:ml-1 before:transition-colors after:transition-colors"

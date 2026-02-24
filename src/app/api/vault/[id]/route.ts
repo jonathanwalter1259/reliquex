@@ -35,7 +35,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         const resolvedParams = await params;
         const id = resolvedParams.id;
         const body = await req.json();
-        const { name, description, category, pricePerShare, totalShares, imagePath, status, physicalLocation, authenticityScore } = body;
+        const { name, description, category, pricePerShare, totalShares, imagePath, status, physicalLocation, authenticityScore, contractAssetId } = body;
 
         const asset = await prisma.asset.update({
             where: { id },
@@ -49,6 +49,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
                 ...(status && { status }),
                 ...(physicalLocation && { physicalLocation }),
                 ...(authenticityScore !== undefined && authenticityScore !== "" && !isNaN(parseInt(authenticityScore)) && { authenticityScore: parseInt(authenticityScore) }),
+                ...(contractAssetId !== undefined && { contractAssetId }),
             },
         });
 

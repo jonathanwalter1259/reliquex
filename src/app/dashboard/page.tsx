@@ -1,151 +1,157 @@
+"use client";
+
 import Image from 'next/image';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { useAccount, useReadContracts } from 'wagmi';
+import { reliqueXAddress, reliqueXABI } from '@/lib/web3/contract';
+import { Asset } from '@prisma/client';
 
 export default function Dashboard() {
+    const { address, isConnected } = useAccount();
+    const [assets, setAssets] = useState<Asset[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchMintedAssets = async () => {
+            try {
+                const res = await fetch('/api/vault');
+                const data = await res.json();
+                if (data.success) {
+                    const mintedAssets = data.assets.filter((a: Asset) => a.status === 'MINTED' && a.contractAssetId !== null);
+                    setAssets(mintedAssets);
+                }
+            } catch (error) {
+                console.error("Failed to fetch assets", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchMintedAssets();
+    }, []);
+
+    // Create wagmi contract read hooks dynamically based on fetched assets
+    const balanceContracts = assets.map((asset) => ({
+        address: reliqueXAddress as `0x${string}`,
+        abi: reliqueXABI,
+        functionName: 'balanceOf',
+        args: [address, asset.contractAssetId],
+    }));
+
+    const { data: balancesData } = useReadContracts({
+        contracts: balanceContracts as any,
+    });
+
+    const holdings = assets.map((asset, index) => {
+        const balance = balancesData?.[index]?.result;
+        const sharesOwned = balance ? Number(balance) : 0;
+        const value = sharesOwned * (asset.pricePerShare || 0);
+        return {
+            ...asset,
+            sharesOwned,
+            value
+        };
+    }).filter(h => h.sharesOwned > 0 || !isConnected); // Show empty placeholders if disconnected
+
+    const totalPortfolioValue = holdings.reduce((sum, h) => sum + h.value, 0);
+    const totalShares = holdings.reduce((sum, h) => sum + h.sharesOwned, 0);
+
     return (
-        <main className="page-wrap reveal">
-            <div className="container">
-                <div className="page-header">
-                    <h1 className="page-header__title">PORTFOLIO DASHBOARD.</h1>
-                    <p className="page-header__sub">&gt; WALLET: 0x8F9a...c4E7 // CONNECTION: ACTIVE</p>
+        <main className="page-wrap reveal min-h-screen pt-32 pb-20">
+            <div className="container mx-auto px-6 max-w-6xl">
+                <div className="page-header mb-12 border-b border-[#00ff41]/30 pb-6 relative">
+                    <div className="absolute bottom-0 left-0 w-32 h-[1px] bg-[#00ff41] shadow-[0_0_10px_#00ff41]"></div>
+                    <h1 className="text-4xl md:text-5xl font-black tracking-[0.2em] mb-2 text-glow uppercase">PORTFOLIO DASHBOARD.</h1>
+                    <p className="text-[#00ff41]/60 font-mono text-sm tracking-[0.3em] uppercase flex items-center gap-3">
+                        <span className={`w-2 h-2 ${isConnected ? 'bg-[#00ff41] animate-pulse' : 'bg-red-500'} rounded-full`}></span>
+                        &gt; WALLET: {isConnected ? `${address?.slice(0, 6)}...${address?.slice(-4)}` : 'DISCONNECTED'} // CONNECTION: {isConnected ? 'ACTIVE' : 'OFFLINE'}
+                    </p>
                 </div>
 
                 {/* Portfolio Summary */}
-                <div className="portfolio-summary">
-                    <div className="portfolio-card">
-                        <div className="hud-corner hud-corner--tl"></div>
-                        <div className="hud-corner hud-corner--tr"></div>
-                        <div className="hud-corner hud-corner--bl"></div>
-                        <div className="hud-corner hud-corner--br"></div>
-                        <div className="portfolio-card__label">PORTFOLIO_VALUE:</div>
-                        <div className="portfolio-card__value">$4,280.00</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div className="relative box-glow bg-black/40 backdrop-blur-xl border border-[#00ff41]/20 p-8 flex flex-col items-center text-center">
+                        <div className="absolute -top-[1px] -left-[1px] w-4 h-4 border-t border-l border-[#00ff41]"></div>
+                        <div className="absolute -top-[1px] -right-[1px] w-4 h-4 border-t border-r border-[#00ff41]"></div>
+                        <div className="absolute -bottom-[1px] -left-[1px] w-4 h-4 border-b border-l border-[#00ff41]"></div>
+                        <div className="absolute -bottom-[1px] -right-[1px] w-4 h-4 border-b border-r border-[#00ff41]"></div>
+                        <div className="text-[#00ff41]/60 tracking-[0.2em] text-xs mb-2">PORTFOLIO_VALUE:</div>
+                        <div className="text-3xl font-mono text-[#00ff41] font-bold text-glow">${totalPortfolioValue.toFixed(2)}</div>
                     </div>
-                    <div className="portfolio-card">
-                        <div className="hud-corner hud-corner--tl"></div>
-                        <div className="hud-corner hud-corner--tr"></div>
-                        <div className="hud-corner hud-corner--bl"></div>
-                        <div className="hud-corner hud-corner--br"></div>
-                        <div className="portfolio-card__label">TOTAL_SHARES:</div>
-                        <div className="portfolio-card__value portfolio-card__value--white">1,847</div>
+                    <div className="relative box-glow bg-black/40 backdrop-blur-xl border border-[#00ff41]/20 p-8 flex flex-col items-center text-center">
+                        <div className="absolute -top-[1px] -left-[1px] w-4 h-4 border-t border-l border-[#00ff41]"></div>
+                        <div className="absolute -top-[1px] -right-[1px] w-4 h-4 border-t border-r border-[#00ff41]"></div>
+                        <div className="absolute -bottom-[1px] -left-[1px] w-4 h-4 border-b border-l border-[#00ff41]"></div>
+                        <div className="absolute -bottom-[1px] -right-[1px] w-4 h-4 border-b border-r border-[#00ff41]"></div>
+                        <div className="text-[#00ff41]/60 tracking-[0.2em] text-xs mb-2">TOTAL_SHARES:</div>
+                        <div className="text-3xl font-mono text-white font-bold">{totalShares}</div>
                     </div>
-                    <div className="portfolio-card">
-                        <div className="hud-corner hud-corner--tl"></div>
-                        <div className="hud-corner hud-corner--tr"></div>
-                        <div className="hud-corner hud-corner--bl"></div>
-                        <div className="hud-corner hud-corner--br"></div>
-                        <div className="portfolio-card__label">UNREALIZED_PNL:</div>
-                        <div className="portfolio-card__value">+$312.40</div>
+                    <div className="relative box-glow bg-black/40 backdrop-blur-xl border border-[#00ff41]/20 p-8 flex flex-col items-center text-center">
+                        <div className="absolute -top-[1px] -left-[1px] w-4 h-4 border-t border-l border-[#00ff41]"></div>
+                        <div className="absolute -top-[1px] -right-[1px] w-4 h-4 border-t border-r border-[#00ff41]"></div>
+                        <div className="absolute -bottom-[1px] -left-[1px] w-4 h-4 border-b border-l border-[#00ff41]"></div>
+                        <div className="absolute -bottom-[1px] -right-[1px] w-4 h-4 border-b border-r border-[#00ff41]"></div>
+                        <div className="text-[#00ff41]/60 tracking-[0.2em] text-xs mb-2">UNREALIZED_PNL:</div>
+                        <div className="text-3xl font-mono text-[#00ff41] font-bold text-glow">+$0.00</div>
                     </div>
                 </div>
 
                 {/* Holdings Table */}
-                <div className="holdings-table-wrap">
-                    <div className="hud-corner hud-corner--tl"></div>
-                    <div className="hud-corner hud-corner--tr"></div>
-                    <div className="hud-corner hud-corner--bl"></div>
-                    <div className="hud-corner hud-corner--br"></div>
+                <div className="relative box-glow bg-black/40 backdrop-blur-xl border border-[#00ff41]/20 overflow-x-auto p-1">
+                    <div className="absolute -top-[1px] -left-[1px] w-8 h-8 border-t-2 border-l-2 border-[#00ff41]"></div>
+                    <div className="absolute -top-[1px] -right-[1px] w-8 h-8 border-t-2 border-r-2 border-[#00ff41]"></div>
+                    <div className="absolute -bottom-[1px] -left-[1px] w-8 h-8 border-b-2 border-l-2 border-[#00ff41]"></div>
+                    <div className="absolute -bottom-[1px] -right-[1px] w-8 h-8 border-b-2 border-r-2 border-[#00ff41]"></div>
 
-                    <div className="holdings-header">
-                        <span className="holdings-header__title">// HOLDINGS_TERMINAL</span>
-                        <span className="holdings-header__status">● SYNCED</span>
+                    <div className="flex justify-between items-center p-6 border-b-2 border-[#00ff41]/50 bg-[#00ff41]/5">
+                        <span className="font-bold tracking-[0.2em] text-[#00ff41] text-xs">// HOLDINGS_TERMINAL</span>
+                        <span className="text-[#00ff41]/80 font-mono text-xs tracking-widest flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-[#00ff41] rounded-full animate-pulse"></span>
+                            {isConnected ? 'SYNCED' : 'WAITING_AUTH'}
+                        </span>
                     </div>
 
-                    <table className="holdings-table">
+                    <table className="w-full text-left font-mono text-sm border-collapse uppercase min-w-[800px]">
                         <thead>
-                            <tr>
-                                <th>ASSET</th>
-                                <th>TICKER</th>
-                                <th>SHARES</th>
-                                <th>AVG_BUY</th>
-                                <th>MKT_PRICE</th>
-                                <th>VALUE</th>
-                                <th>P/L</th>
+                            <tr className="bg-[#00ff41]/5 border-b border-[#00ff41]/20">
+                                <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41]/60 text-xs text-left">ASSET</th>
+                                <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41]/60 text-xs">CLASS</th>
+                                <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41]/60 text-xs text-right">SHARES</th>
+                                <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41]/60 text-xs text-right">MKT_PRICE</th>
+                                <th className="p-6 font-bold tracking-[0.2em] text-[#00ff41]/60 text-xs text-right">VALUE</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div className="asset-link">
-                                        <Image src="/assets/jordan-main.png" alt="" width={40} height={40} />
-                                        <span className="asset-name">Off-White Jordan 1</span>
-                                    </div>
-                                </td>
-                                <td>$OW-CHI</td>
-                                <td>520</td>
-                                <td>$1.72</td>
-                                <td>$2.00</td>
-                                <td>$1,040.00</td>
-                                <td className="profit">+$145.60 (+16.3%)</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div className="asset-link">
-                                        <Image src="/assets/rm-watch.png" alt="" width={40} height={40} />
-                                        <span className="asset-name">Richard Mille RM 011</span>
-                                    </div>
-                                </td>
-                                <td>$RM-011</td>
-                                <td>300</td>
-                                <td>$2.90</td>
-                                <td>$3.20</td>
-                                <td>$960.00</td>
-                                <td className="profit">+$90.00 (+10.3%)</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div className="asset-link">
-                                        <Image src="/assets/necklace.png" alt="" width={40} height={40} />
-                                        <span className="asset-name">Emerald Diamond Rivière</span>
-                                    </div>
-                                </td>
-                                <td>$EM-RV</td>
-                                <td>412</td>
-                                <td>$2.20</td>
-                                <td>$2.45</td>
-                                <td>$1,009.40</td>
-                                <td className="profit">+$103.00 (+11.4%)</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div className="asset-link">
-                                        <Image src="/assets/rolex-daytona.png" alt="" width={40} height={40} />
-                                        <span className="asset-name">Rolex Daytona</span>
-                                    </div>
-                                </td>
-                                <td>$RX-DT</td>
-                                <td>250</td>
-                                <td>$2.15</td>
-                                <td>$2.00</td>
-                                <td>$500.00</td>
-                                <td className="loss">-$37.50 (-7.0%)</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div className="asset-link">
-                                        <Image src="/assets/dior-sneakers.png" alt="" width={40} height={40} />
-                                        <span className="asset-name">Dior x Air Jordan 1</span>
-                                    </div>
-                                </td>
-                                <td>$DJ-AJ1</td>
-                                <td>365</td>
-                                <td>$1.88</td>
-                                <td>$1.85</td>
-                                <td>$675.25</td>
-                                <td className="loss">-$10.95 (-1.6%)</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div className="asset-link">
-                                        <Image src="/assets/ring.png" alt="" width={40} height={40} />
-                                        <span className="asset-name">Onyx Diamond Ring</span>
-                                    </div>
-                                </td>
-                                <td>$OD-RNG</td>
-                                <td>0</td>
-                                <td>—</td>
-                                <td>$1.50</td>
-                                <td>$0.00</td>
-                                <td style={{ color: '#555' }}>—</td>
-                            </tr>
+                        <tbody className="text-[#eee]">
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={5} className="p-16 text-center text-[#00ff41]/50 tracking-[0.2em] animate-pulse">
+                                        &gt; FETCHING_BLOCKCHAIN_LEDGER...
+                                    </td>
+                                </tr>
+                            ) : holdings.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="p-16 text-center text-[#00ff41]/50 tracking-[0.2em]">
+                                        [ NO_ASSETS_DETECTED_IN_WALLET ]
+                                    </td>
+                                </tr>
+                            ) : holdings.map((h, i) => (
+                                <tr key={i} className="border-b border-[#00ff41]/10 hover:bg-[#00ff41]/5 transition-colors group">
+                                    <td className="p-6">
+                                        <Link href={`/asset/${h.id}`} className="flex items-center gap-4">
+                                            {h.imagePath ? (
+                                                <img src={h.imagePath.split(',')[0]} alt={h.name} className="w-10 h-10 object-cover border border-[#00ff41]/30 group-hover:border-[#00ff41]" />
+                                            ) : (
+                                                <div className="w-10 h-10 bg-[#333] border border-[#00ff41]/30"></div>
+                                            )}
+                                            <span className="font-bold tracking-wider group-hover:text-[#00ff41] group-hover:drop-shadow-[0_0_5px_#00ff41] transition-all">{h.name}</span>
+                                        </Link>
+                                    </td>
+                                    <td className="p-6 text-[#00ff41]/70">{h.category}</td>
+                                    <td className="p-6 text-right font-bold">{h.sharesOwned}</td>
+                                    <td className="p-6 text-right">${h.pricePerShare?.toFixed(2) || '0.00'}</td>
+                                    <td className="p-6 text-right font-bold text-[#00ff41]">${h.value.toFixed(2)}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
