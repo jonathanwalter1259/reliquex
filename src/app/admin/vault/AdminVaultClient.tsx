@@ -94,7 +94,6 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
         const endpoint = isEditMode ? `/api/vault/${currentAsset.id}` : '/api/vault';
         const method = isEditMode ? 'PUT' : 'POST';
 
-        // Provide a dummy wallet address for the admin creating the asset
         const payload = { ...currentAsset, walletAddress: '0xADMIN_WALLET' };
 
         try {
@@ -125,7 +124,6 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
         }
     };
 
-
     const handleDelete = async (id: string) => {
         const confirmPurge = window.prompt(`CRITICAL WARNING:\nYou are about to permanently delete this asset from the ReliqueX protocol and marketplace.\n\nType "PURGE_ASSET" to confirm deletion of ID: ${id}`);
 
@@ -150,7 +148,6 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
             const contractAssetId = Math.floor(Math.random() * 1000000);
             const totalShares = BigInt(asset.totalShares || 100);
             const pricePerShare = BigInt(asset.pricePerShare ? Math.floor(asset.pricePerShare * 1e18) : 10000000000000);
-            // Construct placeholder IPFS URI — will be replaced with real pinned CID in production
             const ipfsURI = `ipfs://pending/${contractAssetId}`;
 
             const hash = await writeContractAsync({
@@ -197,157 +194,286 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
     }
 
     return (
-        <div className="vault-manager min-h-screen flex flex-col bg-black text-white p-10 relative text-[#00FF00] selection:bg-[#00FF00] selection:text-black">
-            {/* Global CRT & Glow Styles */}
+        <>
+            {/* Scoped CSS — wins specificity vs pages.css / globals.css */}
             <style dangerouslySetInnerHTML={{
                 __html: `
-                .crt-overlay {
+                .admin-main {
+                    min-height: 100vh !important;
+                    background: #000 !important;
+                    color: #00FF00 !important;
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                    padding-top: 8rem !important;
+                    padding-bottom: 5rem !important;
+                    padding-left: 2rem !important;
+                    padding-right: 2rem !important;
+                    width: 100% !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    align-items: center !important;
+                }
+                .admin-inner {
+                    width: 100% !important;
+                    max-width: 80rem !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    gap: 1.5rem !important;
+                }
+                .admin-crt {
                     position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+                    top: 0; left: 0;
+                    width: 100vw; height: 100vh;
+                    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%);
                     background-size: 100% 3px;
                     pointer-events: none;
                     z-index: 9999;
                     opacity: 0.15;
                 }
-                .text-glow {
-                    text-shadow: 0 0 10px rgba(0, 255, 65, 0.8), 0 0 20px rgba(0, 255, 65, 0.4);
+                .admin-header-row {
+                    display: flex !important;
+                    flex-wrap: wrap !important;
+                    justify-content: space-between !important;
+                    align-items: flex-end !important;
+                    border-bottom: 1px solid #00FF00 !important;
+                    padding-bottom: 1rem !important;
+                    gap: 1rem !important;
                 }
-                .box-glow {
-                    box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 20px rgba(0, 255, 65, 0.05);
+                .admin-header-row h1 {
+                    font-size: 2.25rem !important;
+                    font-weight: 700 !important;
+                    color: #fff !important;
+                    letter-spacing: 0.15em !important;
+                    margin: 0 !important;
+                    line-height: 1.2 !important;
                 }
+                .admin-header-row p {
+                    font-size: 0.875rem !important;
+                    color: #00FF00 !important;
+                    margin: 0.5rem 0 0 0 !important;
+                    letter-spacing: 0.05em !important;
+                }
+                .admin-add-btn {
+                    padding: 0.5rem 1rem !important;
+                    border: 1px solid #00FF00 !important;
+                    background: #000 !important;
+                    color: #00FF00 !important;
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                    font-size: 0.875rem !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s ease !important;
+                    flex-shrink: 0 !important;
+                    white-space: nowrap !important;
+                }
+                .admin-add-btn:hover {
+                    background: #00FF00 !important;
+                    color: #000 !important;
+                }
+                .admin-table-wrap {
+                    width: 100% !important;
+                    border: 1px solid #00FF00 !important;
+                    background: #000 !important;
+                    overflow-x: auto !important;
+                }
+                .admin-table {
+                    width: 100% !important;
+                    text-align: left !important;
+                    border-collapse: collapse !important;
+                    white-space: nowrap !important;
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                }
+                .admin-table th {
+                    padding: 1rem !important;
+                    border-bottom: 1px solid #00FF00 !important;
+                    text-transform: uppercase !important;
+                    font-size: 0.75rem !important;
+                    letter-spacing: 0.1em !important;
+                    color: #00FF00 !important;
+                    font-weight: 700 !important;
+                    background: rgba(0,255,0,0.03) !important;
+                }
+                .admin-table td {
+                    padding: 1rem !important;
+                    border-bottom: 1px solid rgba(0,255,0,0.15) !important;
+                    font-size: 0.875rem !important;
+                    vertical-align: middle !important;
+                    color: #eee !important;
+                }
+                .admin-table tr:hover td {
+                    background: rgba(0,255,0,0.05) !important;
+                }
+                .admin-table .admin-thumb {
+                    width: 2.5rem !important;
+                    height: 2.5rem !important;
+                    object-fit: contain !important;
+                    mix-blend-mode: screen !important;
+                }
+                .admin-actions {
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 1rem !important;
+                    justify-content: flex-end !important;
+                }
+                .admin-actions button {
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                    font-size: 0.75rem !important;
+                    letter-spacing: 0.05em !important;
+                    background: none !important;
+                    border: none !important;
+                    cursor: pointer !important;
+                    transition: color 0.2s ease !important;
+                    padding: 0 !important;
+                }
+                .admin-act-mint { color: #facc15 !important; }
+                .admin-act-mint:hover { color: #fef08a !important; }
+                .admin-act-edit { color: #00FF00 !important; }
+                .admin-act-edit:hover { color: #fff !important; }
+                .admin-act-purge { color: #ef4444 !important; }
+                .admin-act-purge:hover { color: #fca5a5 !important; }
+                .admin-sys-log {
+                    position: fixed !important;
+                    top: 6rem !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    background: rgba(0,0,0,0.9) !important;
+                    border-left: 4px solid #00FF00 !important;
+                    border-right: 4px solid #00FF00 !important;
+                    color: #00FF00 !important;
+                    font-family: var(--font-space-mono), ui-monospace, monospace !important;
+                    padding: 1rem 2rem !important;
+                    z-index: 50 !important;
+                    font-size: 0.875rem !important;
+                    letter-spacing: 0.1em !important;
+                    text-transform: uppercase !important;
+                }
+                .admin-empty {
+                    padding: 4rem 2rem !important;
+                    text-align: center !important;
+                    color: #00FF00 !important;
+                    letter-spacing: 0.15em !important;
+                    font-size: 0.875rem !important;
+                }
+                .admin-cat-badge {
+                    padding: 0.25rem 0.75rem !important;
+                    border: 1px solid rgba(0,255,0,0.3) !important;
+                    background: rgba(0,255,0,0.05) !important;
+                    color: #00FF00 !important;
+                    font-size: 0.75rem !important;
+                    letter-spacing: 0.1em !important;
+                }
+                .admin-no-thumb {
+                    width: 2.5rem !important;
+                    height: 2.5rem !important;
+                    background: #000 !important;
+                    border: 1px solid rgba(0,255,0,0.2) !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    font-size: 8px !important;
+                    color: rgba(0,255,0,0.4) !important;
+                }
+                /* Modal focus glow */
                 .input-glow:focus {
-                    box-shadow: 0 0 15px rgba(0, 255, 65, 0.4), inset 0 0 10px rgba(0, 255, 65, 0.1);
-                    border-color: #00FF00;
+                    box-shadow: 0 0 15px rgba(0,255,0,0.4), inset 0 0 10px rgba(0,255,0,0.1) !important;
+                    border-color: #00FF00 !important;
                 }
-                .hud-border {
-                    background: linear-gradient(90deg, #00FF00 50%, transparent 50%), linear-gradient(90deg, #00FF00 50%, transparent 50%), linear-gradient(0deg, #00FF00 50%, transparent 50%), linear-gradient(0deg, #00FF00 50%, transparent 50%);
-                    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-                    background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
-                    background-position: left top, right bottom, left bottom, right top;
-                    animation: border-dance 4s infinite linear;
-                }
-                @keyframes border-dance {
-                    0% { background-position: left top, right bottom, left bottom, right top; }
-                    100% { background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px; }
-                }
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: #000; border-left: 1px solid rgba(0,255,0,0.1); }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,255,0,0.3); }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,255,0,0.6); }
             `}} />
 
-            <div className="crt-overlay"></div>
+            <main className="admin-main">
+                <div className="admin-crt"></div>
 
-            {systemLog && (
-                <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-black/90 backdrop-blur-md border-l-4 border-r-4 border-[#00FF00] text-[#00FF00] font-mono px-8 py-4 z-50 animate-[pulse_2s_infinite] shadow-[0_0_40px_rgba(0,255,65,0.4)] tracking-widest text-sm uppercase">
-                    {systemLog}
-                </div>
-            )}
+                {/* System Log Toast */}
+                {systemLog && (
+                    <div className="admin-sys-log">{systemLog}</div>
+                )}
 
-            <div className="w-full max-w-7xl mx-auto relative z-10 flex-1 flex flex-col">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-[#00FF00]/30 pb-6 relative">
-                    <div className="absolute bottom-0 left-0 w-32 h-[1px] bg-[#00FF00] shadow-[0_0_10px_#00FF00]"></div>
-                    <div>
-                        <h1 className="text-4xl md:text-5xl font-black tracking-[0.2em] mb-2 text-glow">
-                            NEXUS_VAULT
-                        </h1>
-                        <h2 className="text-[#00FF00]/60 font-mono text-sm tracking-[0.3em] uppercase flex items-center gap-3">
-                            <span className="w-2 h-2 bg-[#00FF00] animate-pulse"></span>
-                            ACTIVE DIRECTORY :: {assets.length} PROTOCOLS ENCRYPTED
-                        </h2>
+                <div className="admin-inner">
+                    {/* Terminal Header & Add Button */}
+                    <div className="admin-header-row">
+                        <div>
+                            <h1>NEXUS_VAULT</h1>
+                            <p>&gt; ACTIVE DIRECTORY :: {assets.length} PROTOCOLS ENCRYPTED</p>
+                        </div>
+                        <button onClick={() => openModal()} className="admin-add-btn">
+                            &gt; + ADD_PRODUCT_
+                        </button>
                     </div>
-                    <button
-                        onClick={() => openModal()}
-                        className="mt-6 md:mt-0 relative group bg-[#00FF00]/10 border border-[#00FF00] px-8 py-3 overflow-hidden transition-all duration-300 hover:bg-[#00FF00] hover:shadow-[0_0_30px_rgba(0,255,65,0.6)]"
-                    >
-                        <span className="font-mono tracking-[0.2em] font-bold text-[#00FF00] group-hover:text-black relative z-10 block transition-colors duration-300">
-                            [+ ADD_PRODUCT]
-                        </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></div>
-                    </button>
-                </div>
 
-                {/* Data Grid Section */}
-                <div className="relative bg-black border border-[#00FF00] flex-1">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left font-mono text-sm border-collapse uppercase">
+                    {/* Table Container */}
+                    <div className="admin-table-wrap">
+                        <table className="admin-table">
                             <thead>
-                                <tr className="bg-[#00FF00]/5 border-b border-[#00FF00]">
-                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00FF00] text-xs">SYS_ID</th>
-                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00FF00] text-xs">NEXUS_DESIGNATION</th>
-                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00FF00] text-xs">CLASS</th>
-                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00FF00] text-xs">VALUATION</th>
-                                    <th className="p-6 font-bold tracking-[0.2em] text-[#00FF00] text-xs text-right">OVERRIDE</th>
+                                <tr>
+                                    <th>SYS_ID</th>
+                                    <th>NEXUS_DESIGNATION</th>
+                                    <th>CLASS</th>
+                                    <th>VALUATION</th>
+                                    <th style={{ textAlign: 'right' }}>OVERRIDE</th>
                                 </tr>
                             </thead>
-                            <tbody className="text-[#eee]">
+                            <tbody>
                                 {assets.map((asset) => (
-                                    <tr key={asset.id} className="border-b border-green-900/50 hover:bg-gradient-to-r hover:from-[#00FF00]/10 hover:to-transparent transition-all duration-200 group">
-                                        <td className="py-4 px-6 text-[#00FF00]/50 text-xs w-40 truncate">
+                                    <tr key={asset.id}>
+                                        <td style={{ color: 'rgba(0,255,0,0.5)', fontSize: '0.75rem' }}>
                                             {asset.id.slice(0, 8)}...
                                         </td>
-                                        <td className="py-4 px-6">
-                                            <div className="flex items-center gap-4">
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                 {asset.imagePath ? (
-                                                    <img src={asset.imagePath.split(',')[0]} alt="Asset" className="w-12 h-12 object-cover border border-[#00FF00]/30 group-hover:border-[#00FF00] transition-colors" />
+                                                    <img
+                                                        src={asset.imagePath.split(',')[0]}
+                                                        alt="Asset"
+                                                        className="admin-thumb"
+                                                    />
                                                 ) : (
-                                                    <div className="w-12 h-12 bg-black border border-[#00FF00]/20 flex items-center justify-center text-[8px] text-[#00FF00]/40">NO_IMG</div>
+                                                    <div className="admin-no-thumb">NO_IMG</div>
                                                 )}
-                                                <span className="font-bold tracking-wider group-hover:text-glow transition-all">{asset.name}</span>
+                                                <span style={{ fontWeight: 700, letterSpacing: '0.05em' }}>{asset.name}</span>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6 tracking-widest text-xs">
-                                            <span className="px-3 py-1 border border-[#00FF00]/30 bg-[#00FF00]/5 text-[#00FF00]">
-                                                {asset.category}
-                                            </span>
+                                        <td>
+                                            <span className="admin-cat-badge">{asset.category}</span>
                                         </td>
-                                        <td className="py-4 px-6 tracking-wider">
-                                            {asset.pricePerShare ? <span className="text-white">${asset.pricePerShare.toFixed(2)}</span> : <span className="text-[#00FF00]/40">UNPRICED</span>}
+                                        <td>
+                                            {asset.pricePerShare
+                                                ? <span style={{ color: '#fff' }}>${asset.pricePerShare.toFixed(2)}</span>
+                                                : <span style={{ color: 'rgba(0,255,0,0.4)' }}>UNPRICED</span>
+                                            }
                                         </td>
-                                        <td className="py-4 px-6 text-right space-x-4">
-                                            {asset.status === 'AUTHENTICATED' && !asset.contractAssetId && (
+                                        <td>
+                                            <div className="admin-actions">
+                                                {asset.status === 'AUTHENTICATED' && !asset.contractAssetId && (
+                                                    <button
+                                                        onClick={() => handleMint(asset)}
+                                                        disabled={isMinting === asset.id}
+                                                        className="admin-act-mint"
+                                                    >
+                                                        [{isMinting === asset.id ? 'PROPOSING...' : 'PROPOSE_MINT'}]
+                                                    </button>
+                                                )}
                                                 <button
-                                                    onClick={() => handleMint(asset)}
-                                                    disabled={isMinting === asset.id}
-                                                    className="text-yellow-400/80 hover:text-yellow-300 transition-all tracking-[0.1em] text-xs relative before:content-['['] after:content-[']'] hover:before:text-yellow-400 hover:after:text-yellow-400 before:mr-1 after:ml-1 before:transition-colors after:transition-colors"
+                                                    onClick={() => openModal(asset)}
+                                                    className="admin-act-edit"
                                                 >
-                                                    {isMinting === asset.id ? 'PROPOSING...' : 'PROPOSE_MINT'}
+                                                    [EDIT]
                                                 </button>
-                                            )}
-                                            <button
-                                                onClick={() => openModal(asset)}
-                                                className="text-[#00FF00]/70 hover:text-white hover:text-glow transition-all tracking-[0.1em] text-xs relative before:content-['['] after:content-[']'] hover:before:text-[#00FF00] hover:after:text-[#00FF00] before:mr-1 after:ml-1 before:transition-colors after:transition-colors"
-                                            >
-                                                EDIT
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(asset.id)}
-                                                className="text-red-500/70 hover:text-red-400 hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] transition-all tracking-[0.1em] text-xs relative before:content-['['] after:content-[']'] hover:before:text-red-500 hover:after:text-red-500 before:mr-1 after:ml-1 before:transition-colors after:transition-colors"
-                                            >
-                                                PURGE
-                                            </button>
+                                                <button
+                                                    onClick={() => handleDelete(asset.id)}
+                                                    className="admin-act-purge"
+                                                >
+                                                    [PURGE]
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
                                 {assets.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="p-8 md:p-16">
-                                            <div className="relative border border-[#00FF00]/30 bg-[#00FF00]/5 backdrop-blur-md p-12 text-center flex flex-col items-center justify-center space-y-6 group hover:bg-[#00FF00]/10 transition-colors duration-500 overflow-hidden">
-                                                {/* Scanline overlay for empty state */}
-                                                <div className="absolute inset-0 w-full h-full bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] pointer-events-none opacity-50"></div>
-
-                                                {/* HUD crosshairs inside the empty box */}
-                                                <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#00FF00]"></div>
-                                                <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#00FF00]"></div>
-                                                <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#00FF00]"></div>
-                                                <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#00FF00]"></div>
-
-                                                <svg className="w-16 h-16 text-[#00FF00]/50 group-hover:text-[#00FF00] group-hover:drop-shadow-[0_0_15px_rgba(0,255,65,0.8)] transition-all duration-300 animate-[pulse_3s_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                                                <span className="text-[#00FF00]/80 font-mono tracking-[0.3em] font-bold text-lg text-glow uppercase relative z-10 group-hover:text-white transition-colors duration-300">
-                                                    [ DATABASE_EMPTY // WAITING_FOR_INPUT ]
-                                                </span>
-                                            </div>
+                                        <td colSpan={5} className="admin-empty">
+                                            [ DATABASE_EMPTY // WAITING_FOR_INPUT ]
                                         </td>
                                     </tr>
                                 )}
@@ -355,29 +481,27 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                         </table>
                     </div>
                 </div>
-            </div>
+            </main>
 
-            {/* Cinematic Modal */}
+            {/* Cinematic Modal — preserved from original */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pb-20">
-                    {/* Deep Blur Backdrop */}
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={closeModal}></div>
 
                     <div className="w-full max-w-3xl bg-[#030303] border border-[#00FF00]/40 shadow-[0_0_60px_rgba(0,255,65,0.15)] relative z-10 flex flex-col max-h-[90vh]">
-
                         {/* Modal Header */}
                         <div className="bg-[#00FF00]/5 border-b border-[#00FF00]/30 p-6 flex justify-between items-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00FF00] to-transparent opacity-50"></div>
-                            <h3 className="text-xl md:text-2xl font-black tracking-[0.3em] text-[#00FF00] text-glow uppercase flex items-center gap-4">
+                            <h3 className="text-xl md:text-2xl font-black tracking-[0.3em] text-[#00FF00] uppercase flex items-center gap-4">
                                 <span className="inline-block w-3 h-3 bg-[#00FF00] animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></span>
                                 {isEditMode ? 'OVERRIDE_PROTOCOL' : 'INITIALIZE_PROTOCOL'}
                             </h3>
-                            <button onClick={closeModal} className="text-[#00FF00]/50 hover:text-white transition-colors text-2xl font-bold hover:text-glow hover:rotate-90 duration-300 w-10 h-10 flex items-center justify-center border border-transparent hover:border-[#00FF00]/30 bg-black/20">
+                            <button onClick={closeModal} className="text-[#00FF00]/50 hover:text-white transition-colors text-2xl font-bold duration-300 w-10 h-10 flex items-center justify-center border border-transparent hover:border-[#00FF00]/30 bg-black/20">
                                 &times;
                             </button>
                         </div>
 
-                        {/* Modal Body - Scrollable */}
+                        {/* Modal Body */}
                         <div className="p-8 overflow-y-auto custom-scrollbar">
                             <form onSubmit={handleSave} className="space-y-8 font-mono text-sm">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -476,15 +600,13 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                             disabled={isUploading}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait z-10"
                                         />
-
-                                        {/* HUD Corner Decor within Dropzone */}
                                         <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-[#00FF00]/50 group-hover:border-[#00FF00] transition-colors"></div>
                                         <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-[#00FF00]/50 group-hover:border-[#00FF00] transition-colors"></div>
 
                                         {isUploading ? (
                                             <div className="w-full max-w-sm text-left relative z-20">
                                                 <div className="flex justify-between items-end mb-2">
-                                                    <div className="text-[#00FF00] animate-pulse uppercase tracking-widest text-xs font-bold text-glow">
+                                                    <div className="text-[#00FF00] animate-pulse uppercase tracking-widest text-xs font-bold">
                                                         [ UPLOADING_TO_SECURE_NODE ]
                                                     </div>
                                                     <div className="text-[#00FF00]/70 text-[10px] tracking-widest animate-pulse">
@@ -492,29 +614,25 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                                     </div>
                                                 </div>
                                                 <div className="w-full h-1 bg-[#111] overflow-hidden">
-                                                    <div className="h-full bg-[#00FF00] shadow-[0_0_10px_#00FF00] animate-[progress_1s_ease-in-out_infinite] w-[40%]"></div>
+                                                    <div className="h-full bg-[#00FF00] animate-pulse w-[40%]"></div>
                                                 </div>
                                             </div>
                                         ) : currentAsset.imagePath ? (
                                             <div className="flex flex-col items-center relative z-20 w-full">
                                                 <div className="flex flex-wrap justify-center gap-2 mb-4">
                                                     {currentAsset.imagePath.split(',').filter(Boolean).map((url, idx) => (
-                                                        <div key={idx} className="relative p-1 border border-[#00FF00]/40 bg-black/50 backdrop-blur-sm">
-                                                            <img
-                                                                src={url}
-                                                                alt={`Preview ${idx + 1}`}
-                                                                className="h-20 w-20 object-cover"
-                                                            />
+                                                        <div key={idx} className="relative p-1 border border-[#00FF00]/40 bg-black/50">
+                                                            <img src={url} alt={`Preview ${idx + 1}`} className="h-20 w-20 object-cover" />
                                                         </div>
                                                     ))}
                                                 </div>
-                                                <span className="text-[#00FF00] uppercase tracking-[0.2em] text-[10px] bg-black px-4 py-1 border border-[#00FF00]/30 hover:bg-[#00FF00]/20 transition-colors pointer-events-none">
+                                                <span className="text-[#00FF00] uppercase tracking-[0.2em] text-[10px] bg-black px-4 py-1 border border-[#00FF00]/30 pointer-events-none">
                                                     [ APPEND_MORE_MEDIA ]
                                                 </span>
                                             </div>
                                         ) : (
                                             <div className="flex flex-col items-center space-y-4">
-                                                <svg className="w-10 h-10 text-[#00FF00]/40 group-hover:text-[#00FF00] group-hover:drop-shadow-[0_0_8px_#00FF00] transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                                                <svg className="w-10 h-10 text-[#00FF00]/40 group-hover:text-[#00FF00] transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                                                 <span className="text-[#00FF00]/60 uppercase tracking-[0.2em] group-hover:text-[#00FF00] transition-colors text-xs">
                                                     INPUT_DRAG_POINT :: CLICK_TO_INJECT
                                                 </span>
@@ -541,19 +659,9 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                     <button
                                         type="submit"
                                         disabled={isSaving || isUploading}
-                                        className={`relative overflow-hidden group bg-black border border-[#00FF00] text-[#00FF00] px-12 py-4 tracking-[0.3em] font-black uppercase text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-wait ${isUploading || isSaving ? 'shadow-[0_0_20px_rgba(0,255,65,0.4)] animate-pulse' : 'hover:bg-[#00FF00] hover:text-black hover:shadow-[0_0_30px_rgba(0,255,65,0.8)]'}`}
+                                        className={`bg-black border border-[#00FF00] text-[#00FF00] px-12 py-4 tracking-[0.3em] font-black uppercase text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-wait ${isUploading || isSaving ? 'animate-pulse' : 'hover:bg-[#00FF00] hover:text-black'}`}
                                     >
-                                        <div className="absolute inset-0 w-full h-full border-[2px] border-[#00FF00]/20 hud-border pointer-events-none hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        {isSaving ? (
-                                            <span className="flex items-center gap-4 relative z-10">
-                                                <div className="w-4 h-4 border-2 border-t-[#00FF00] border-r-transparent border-b-[#00FF00]/30 border-l-[#00FF00]/30 rounded-full animate-spin"></div>
-                                                EXECUTING_
-                                            </span>
-                                        ) : (
-                                            <span className="relative z-10">{isEditMode ? 'COMMIT_OVERRIDE' : 'EXECUTE_DEPLOY'}</span>
-                                        )}
-                                        {/* Glitch Overlay Effect */}
-                                        <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover:animate-[glitch_2s_infinite] opacity-0 group-hover:opacity-100 mix-blend-overlay pointer-events-none"></div>
+                                        {isSaving ? 'EXECUTING_...' : (isEditMode ? 'COMMIT_OVERRIDE' : 'EXECUTE_DEPLOY')}
                                     </button>
                                 </div>
                             </form>
@@ -561,24 +669,6 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                     </div>
                 </div>
             )}
-
-            {/* Custom Scrollbar CSS for Modal */}
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: #000;
-                    border-left: 1px solid rgba(0,255,65,0.1);
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(0,255,65,0.3);
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(0,255,65,0.6);
-                }
-            `}} />
-        </div>
+        </>
     );
 }
