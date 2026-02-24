@@ -3,6 +3,8 @@ import AssetRow from './AssetRow';
 
 const prisma = new PrismaClient();
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
     // Fetch all assets, order by newest first
     const assets = await prisma.asset.findMany({
