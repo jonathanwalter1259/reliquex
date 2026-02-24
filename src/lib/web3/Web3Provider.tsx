@@ -24,12 +24,6 @@ createAppKit({
     networks,
     features: {
         analytics: false
-    },
-    themeMode: 'dark',
-    themeVariables: {
-        '--w3m-accent': '#00ff41',
-        '--w3m-border-radius-master': '0px',
-        '--w3m-font-family': 'var(--font-space-mono)'
     }
 });
 

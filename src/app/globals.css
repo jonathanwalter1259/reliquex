@@ -24,6 +24,13 @@
   --sans: 'Inter', sans-serif;
   --mono: 'Space Mono', monospace;
   --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* AppKit / Web3Modal Web Component Overrides */
+  --w3m-color-mix: #00ff41;
+  --w3m-color-mix-strength: 10;
+  --w3m-font-family: var(--mono);
+  --w3m-accent: #00ff41;
+  --w3m-border-radius-master: 0px;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -281,6 +288,19 @@ body::after {
 .btn-connect svg {
   width: 16px;
   height: 16px;
+}
+
+/* Hard Web Component Override for AppKit Button */
+appkit-button {
+  --w3m-font-family: var(--mono);
+  --w3m-accent: transparent;
+  --w3m-border-radius-master: 0px;
+  --wui-color-bg-125: transparent;
+  --wui-color-accent-100: transparent;
+  --wui-color-accent-090: rgba(0, 255, 0, 0.06);
+  --wui-color-fg-100: #00ff41;
+  --wui-spacing-l: 1.6rem;
+  --wui-border-radius-m: 4px;
 }
 
 /* Mobile Menu */
