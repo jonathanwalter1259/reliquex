@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Asset } from '@prisma/client';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -11,6 +11,11 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ass
     const [currentAsset, setCurrentAsset] = useState<Partial<Asset>>({});
     const [systemLog, setSystemLog] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const openModal = (asset?: Asset) => {
         if (asset) {
@@ -117,6 +122,16 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ass
             }
         }
     };
+
+    if (!mounted) {
+        return (
+            <div className="flex justify-center items-center min-h-[400px]">
+                <span className="text-[#00ff41] font-mono text-sm tracking-widest animate-pulse">
+                    &gt; INITIATING_SECURE_VAULT_CONNECTION...
+                </span>
+            </div>
+        );
+    }
 
     return (
         <div className="vault-manager">
