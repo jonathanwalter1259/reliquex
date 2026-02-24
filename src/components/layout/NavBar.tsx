@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAccount, useSignMessage, useChainId } from 'wagmi';
 import { SiweMessage } from 'siwe';
+import { useAppKit } from '@reown/appkit/react';
 
 export default function NavBar() {
     const pathname = usePathname();
@@ -15,10 +16,11 @@ export default function NavBar() {
     const [isAuthenticating, setIsAuthenticating] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
 
-    // Wagmi hooks
+    // Wagmi & AppKit hooks
     const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const { signMessageAsync } = useSignMessage();
+    const { open } = useAppKit();
 
     useEffect(() => {
         setMounted(true);
@@ -115,19 +117,46 @@ export default function NavBar() {
 
                 {mounted && (
                     <div style={{ marginLeft: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        {isConnected && !isAuthenticated && (
-                            <div className="flex flex-col items-end gap-1">
-                                <button
-                                    onClick={handleAuthenticate}
-                                    disabled={isAuthenticating}
-                                    className="font-mono text-xs tracking-widest px-4 py-2 border border-[#00ff41] text-[#00ff41] hover:bg-[#00ff41] hover:text-black transition-colors"
-                                >
-                                    {isAuthenticating ? '[SIGNING...]' : 'AUTHENTICATE'}
-                                </button>
-                                {authError && <span className="text-red-500 text-[10px] uppercase font-mono absolute top-20 right-4">{authError}</span>}
+                        {isConnected ? (
+                            <div className="flex items-center gap-3">
+                                {/* Address Display */}
+                                <div className="font-mono text-[11px] border border-[#333] px-3 py-1.5 text-[#fff] bg-[#111] uppercase tracking-wider">
+                                    <span className="text-[#888] mr-2">ID:</span>
+                                    {address?.slice(0, 6)}...{address?.slice(-4)}
+                                </div>
+
+                                {/* Auth Status/Button */}
+                                {!isAuthenticated ? (
+                                    <div className="flex flex-col items-end gap-1 relative">
+                                        <button
+                                            onClick={handleAuthenticate}
+                                            disabled={isAuthenticating}
+                                            className="font-mono text-[11px] tracking-widest px-4 py-1.5 border border-[#00ff41] text-[#00ff41] hover:bg-[#00ff41] hover:text-black transition-colors"
+                                        >
+                                            {isAuthenticating ? '[SIGNING...]' : 'AUTHENTICATE'}
+                                        </button>
+                                        {authError && (
+                                            <span className="text-red-500 text-[10px] uppercase font-mono absolute top-full mt-1 right-0 whitespace-nowrap">
+                                                {(authError.includes('Prisma') || authError.includes('database'))
+                                                    ? '> [SYSTEM_ERROR]: DATABASE_CONNECTION_FAILED'
+                                                    : `> ERR_MSG: ${authError}`}
+                                            </span>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="font-mono text-[11px] tracking-widest px-4 py-1.5 bg-[rgba(0,255,0,0.1)] text-[#00ff41] border border-[#00ff41]">
+                                        [AUTHENTICATED]
+                                    </div>
+                                )}
                             </div>
+                        ) : (
+                            <button
+                                onClick={() => open()}
+                                className="font-mono text-xs tracking-widest px-6 py-2 border border-[#00ff41] text-[#00ff41] bg-transparent hover:bg-[#00ff41] hover:text-black transition-colors"
+                            >
+                                CONNECT WALLET
+                            </button>
                         )}
-                        <appkit-button />
                     </div>
                 )}
 
