@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Asset } from '@prisma/client';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -10,6 +11,7 @@ export type SerializedAsset = Omit<Asset, 'createdAt' | 'updatedAt'> & {
 };
 
 export default function AdminVaultClient({ initialAssets }: { initialAssets: SerializedAsset[] }) {
+    const router = useRouter();
     const [assets, setAssets] = useState<SerializedAsset[]>(initialAssets);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -57,7 +59,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
             const filePath = `assets/${fileName}`;
 
             const { error: uploadError, data } = await supabase.storage
-                .from('vault-assets')
+                .from('assets')
                 .upload(filePath, file);
 
             if (uploadError) {
@@ -65,7 +67,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
             }
 
             const { data: publicUrlData } = supabase.storage
-                .from('vault-assets')
+                .from('assets')
                 .getPublicUrl(filePath);
 
             setCurrentAsset({ ...currentAsset, imagePath: publicUrlData.publicUrl });
@@ -104,6 +106,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                     triggerLog(`NEW_ASSET_REGISTERED_SUCCESSFULLY`);
                 }
                 closeModal();
+                router.refresh();
             } else {
                 alert(data.error);
             }
@@ -162,13 +165,13 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                 </button>
             </div>
 
-            <div className="overflow-x-auto border border-[#00ff41]/30 bg-[#0a0a0a] p-8 relative">
+            <div className="overflow-x-auto max-w-7xl mx-auto border-2 border-[#00ff41] bg-[#0a0a0a] p-8 relative shadow-[0_0_30px_rgba(0,255,65,0.1)]">
                 <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ff41]"></div>
                 <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00ff41]"></div>
                 <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00ff41]"></div>
                 <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ff41]"></div>
 
-                <table className="w-full text-left font-mono text-sm border-collapse">
+                <table className="w-full text-left font-mono text-sm border-collapse uppercase">
                     <thead>
                         <tr className="border-b border-[#00ff41] text-[#00ff41]">
                             <th className="p-4 font-normal tracking-wider">ASSET_ID</th>
@@ -290,12 +293,17 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                         accept="image/*"
                                         onChange={handleImageUpload}
                                         disabled={isUploading}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait z-10"
                                     />
                                     {isUploading ? (
-                                        <span className="text-[#00ff41] animate-pulse uppercase tracking-widest">
-                                            [TRANSMITTING_DATA...]
-                                        </span>
+                                        <div className="w-full max-w-xs text-left">
+                                            <div className="text-[#00ff41] animate-pulse uppercase tracking-widest text-xs mb-2">
+                                                &gt; TRANSMITTING_DATA_TO_SECURE_BUCKET...
+                                            </div>
+                                            <div className="w-full h-2 bg-black border border-[#00ff41] relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 h-full bg-[#00ff41] animate-[progress_1.5s_ease-in-out_infinite] w-[60%]"></div>
+                                            </div>
+                                        </div>
                                     ) : currentAsset.imagePath ? (
                                         <div className="flex flex-col items-center">
                                             <img
@@ -333,7 +341,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                 <button
                                     type="submit"
                                     disabled={isSaving || isUploading}
-                                    className="relative overflow-hidden group bg-[#000] border-2 border-[#00ff41] text-[#00ff41] px-10 py-4 tracking-[0.2em] font-bold hover:bg-[#00ff41] hover:text-black hover:shadow-[0_0_30px_rgba(0,255,65,0.6)] transition-all duration-300 disabled:opacity-50 disabled:cursor-wait"
+                                    className={`relative overflow-hidden group bg-[#000] border-2 border-[#00ff41] text-[#00ff41] px-10 py-4 tracking-[0.2em] font-bold hover:bg-[#00ff41] hover:text-black hover:shadow-[0_0_40px_rgba(0,255,65,0.8)] transition-all duration-300 disabled:opacity-50 disabled:cursor-wait ${isUploading || isSaving ? 'shadow-[0_0_30px_rgba(0,255,65,0.5)] animate-pulse' : ''}`}
                                 >
                                     {isSaving ? (
                                         <span className="flex items-center gap-3">
