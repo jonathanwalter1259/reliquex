@@ -146,7 +146,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
     }
 
     return (
-        <div className="vault-manager min-h-screen relative pt-12 pb-24 text-[#00ff41] selection:bg-[#00ff41] selection:text-black">
+        <div className="vault-manager relative pt-16 md:pt-24 pb-24 text-[#00ff41] selection:bg-[#00ff41] selection:text-black">
             {/* Global CRT & Glow Styles */}
             <style dangerouslySetInnerHTML={{
                 __html: `
@@ -278,11 +278,20 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                 ))}
                                 {assets.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="p-24 text-center">
-                                            <div className="flex flex-col items-center justify-center space-y-4">
-                                                <svg className="w-16 h-16 text-[#00ff41]/50 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                                                <span className="text-[#00ff41]/80 font-mono tracking-[0.3em] font-bold text-lg text-glow">
-                                                    DATABASE_EMPTY // WAITING_FOR_INPUT
+                                        <td colSpan={5} className="p-8 md:p-16">
+                                            <div className="relative border border-[#00ff41]/30 bg-[#00ff41]/5 backdrop-blur-md p-12 text-center flex flex-col items-center justify-center space-y-6 group hover:bg-[#00ff41]/10 transition-colors duration-500 overflow-hidden">
+                                                {/* Scanline overlay for empty state */}
+                                                <div className="absolute inset-0 w-full h-full bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] pointer-events-none opacity-50"></div>
+
+                                                {/* HUD crosshairs inside the empty box */}
+                                                <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#00ff41]"></div>
+                                                <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#00ff41]"></div>
+                                                <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#00ff41]"></div>
+                                                <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#00ff41]"></div>
+
+                                                <svg className="w-16 h-16 text-[#00ff41]/50 group-hover:text-[#00ff41] group-hover:drop-shadow-[0_0_15px_rgba(0,255,65,0.8)] transition-all duration-300 animate-[pulse_3s_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                                                <span className="text-[#00ff41]/80 font-mono tracking-[0.3em] font-bold text-lg text-glow uppercase relative z-10 group-hover:text-white transition-colors duration-300">
+                                                    [ DATABASE_EMPTY // WAITING_FOR_INPUT ]
                                                 </span>
                                             </div>
                                         </td>
