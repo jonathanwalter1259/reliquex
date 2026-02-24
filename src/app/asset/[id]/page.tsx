@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Asset } from "@prisma/client";
@@ -8,9 +8,13 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagm
 import { parseEther } from 'viem';
 import { reliqueXAddress, reliqueXABI } from '@/lib/web3/contract';
 
-export default function AssetPage({ params }: { params: { id: string } }) {
+export default function AssetPage(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
+    const id = params.id;
+
     const [asset, setAsset] = useState<Asset | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [images, setImages] = useState<string[]>([]);
     const [activeImage, setActiveImage] = useState<string>("");
     const [sharesToBuy, setSharesToBuy] = useState(1);
 
@@ -40,12 +44,14 @@ export default function AssetPage({ params }: { params: { id: string } }) {
     useEffect(() => {
         const fetchAsset = async () => {
             try {
-                const res = await fetch(`/api/vault/${params.id}`);
+                const res = await fetch(`/api/vault/${id}`);
                 const data = await res.json();
                 if (data.success) {
                     setAsset(data.asset);
                     if (data.asset.imagePath) {
-                        setActiveImage(data.asset.imagePath);
+                        const urls = data.asset.imagePath.split(',');
+                        setImages(urls);
+                        setActiveImage(urls[0]);
                     }
                 }
             } catch (error) {
@@ -56,7 +62,7 @@ export default function AssetPage({ params }: { params: { id: string } }) {
         };
 
         fetchAsset();
-    }, [params.id]);
+    }, [id]);
 
     if (isLoading) {
         return (
@@ -113,21 +119,17 @@ export default function AssetPage({ params }: { params: { id: string } }) {
                         </div>
 
                         {/*  Thumbnails  */}
-                        {activeImage && (
+                        {images.length > 0 && (
                             <div className="asset-thumbs">
-                                <button className="asset-thumb active border-[#00ff41]">
-                                    <img src={activeImage} alt="Main View" className="w-full h-full object-cover" />
-                                </button>
-                                {/* Generating mock identical thumbnails to match UI layout */}
-                                <button className="asset-thumb hover:border-[#333] opacity-50 hover:opacity-100 transition-opacity">
-                                    <img src={activeImage} alt="View 2" className="w-full h-full object-cover grayscale" />
-                                </button>
-                                <button className="asset-thumb hover:border-[#333] opacity-50 hover:opacity-100 transition-opacity">
-                                    <img src={activeImage} alt="View 3" className="w-full h-full object-cover grayscale" />
-                                </button>
-                                <button className="asset-thumb hover:border-[#333] opacity-50 hover:opacity-100 transition-opacity">
-                                    <img src={activeImage} alt="View 4" className="w-full h-full object-cover grayscale" />
-                                </button>
+                                {images.map((url, idx) => (
+                                    <button
+                                        key={idx}
+                                        className={`asset-thumb transition-opacity ${activeImage === url ? 'active border-[#00ff41]' : 'hover:border-[#333] opacity-50 hover:opacity-100'}`}
+                                        onClick={() => setActiveImage(url)}
+                                    >
+                                        <img src={url} alt={`View ${idx + 1}`} className={`w-full h-full object-cover ${activeImage !== url ? 'grayscale' : ''}`} />
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>

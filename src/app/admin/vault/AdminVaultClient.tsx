@@ -47,30 +47,34 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
 
         setIsUploading(true);
-        triggerLog('UPLOADING_IMAGE_TO_STORAGE...');
+        triggerLog(`UPLOADING_${files.length}_IMAGE_PAYLOADS...`);
 
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-            const filePath = `assets/${fileName}`;
+            const newUrls = [];
+            for (const file of files) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+                const filePath = `assets/${fileName}`;
 
-            const { error: uploadError, data } = await supabase.storage
-                .from('assets')
-                .upload(filePath, file);
+                const { error: uploadError } = await supabase.storage
+                    .from('assets')
+                    .upload(filePath, file);
 
-            if (uploadError) {
-                throw uploadError;
+                if (uploadError) throw uploadError;
+
+                const { data: publicUrlData } = supabase.storage
+                    .from('assets')
+                    .getPublicUrl(filePath);
+
+                newUrls.push(publicUrlData.publicUrl);
             }
 
-            const { data: publicUrlData } = supabase.storage
-                .from('assets')
-                .getPublicUrl(filePath);
-
-            setCurrentAsset({ ...currentAsset, imagePath: publicUrlData.publicUrl });
+            const existingPath = currentAsset.imagePath ? currentAsset.imagePath + ',' : '';
+            setCurrentAsset({ ...currentAsset, imagePath: existingPath + newUrls.join(',') });
             triggerLog('IMAGE_UPLOAD_SUCCESSFUL');
         } catch (error: any) {
             console.error('Error uploading image:', error);
@@ -385,6 +389,7 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                     <div className={`relative border border-[#00ff41]/30 ${isUploading ? 'bg-[#00ff41]/10 border-[#00ff41]' : 'bg-[#00ff41]/5 hover:bg-[#00ff41]/10 hover:border-[#00ff41]/60'} transition-all p-8 flex flex-col items-center justify-center text-center cursor-pointer min-h-[160px] group`}>
                                         <input
                                             type="file"
+                                            multiple
                                             accept="image/*"
                                             onChange={handleImageUpload}
                                             disabled={isUploading}
@@ -411,15 +416,19 @@ export default function AdminVaultClient({ initialAssets }: { initialAssets: Ser
                                             </div>
                                         ) : currentAsset.imagePath ? (
                                             <div className="flex flex-col items-center relative z-20 w-full">
-                                                <div className="relative p-2 border border-[#00ff41]/40 bg-black/50 backdrop-blur-sm mb-4">
-                                                    <img
-                                                        src={currentAsset.imagePath}
-                                                        alt="Preview"
-                                                        className="h-32 object-contain"
-                                                    />
+                                                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                                                    {currentAsset.imagePath.split(',').filter(Boolean).map((url, idx) => (
+                                                        <div key={idx} className="relative p-1 border border-[#00ff41]/40 bg-black/50 backdrop-blur-sm">
+                                                            <img
+                                                                src={url}
+                                                                alt={`Preview ${idx + 1}`}
+                                                                className="h-20 w-20 object-cover"
+                                                            />
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                                <span className="text-[#00ff41] uppercase tracking-[0.2em] text-[10px] bg-black px-4 py-1 border border-[#00ff41]/30">
-                                                    [ OVERRIDE_MEDIA_PAYLOAD ]
+                                                <span className="text-[#00ff41] uppercase tracking-[0.2em] text-[10px] bg-black px-4 py-1 border border-[#00ff41]/30 hover:bg-[#00ff41]/20 transition-colors pointer-events-none">
+                                                    [ APPEND_MORE_MEDIA ]
                                                 </span>
                                             </div>
                                         ) : (
