@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import RiskDisclosure from "@/components/layout/RiskDisclosure";
 import ScrollObserver from "@/components/utils/ScrollObserver";
 import { Web3Provider } from "@/lib/web3/Web3Provider";
+import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
 import "./globals.css";
 import "./pages.css";
 import "./asset.css";
@@ -36,11 +37,13 @@ export default function RootLayout({
         className={`${inter.variable} ${spaceMono.variable} antialiased`}
       >
         <Web3Provider>
-          <ScrollObserver />
-          <NavBar />
-          {children}
-          <RiskDisclosure />
-          <Footer />
+          <OnboardingProvider>
+            <ScrollObserver />
+            <NavBar />
+            {children}
+            <RiskDisclosure />
+            <Footer />
+          </OnboardingProvider>
         </Web3Provider>
       </body>
     </html>

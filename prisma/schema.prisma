@@ -8,10 +8,16 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(cuid())
-  walletAddress   String   @unique
-  role            Role     @default(USER)
-  createdAt       DateTime @default(now())
+  id                    String   @id @default(cuid())
+  walletAddress         String   @unique
+  role                  Role     @default(USER)
+  name                  String?
+  email                 String?  @unique
+  username              String?
+  onboardingCompleted   Boolean  @default(false)
+  notificationsNewDrops Boolean  @default(true)
+  notificationsSecurity Boolean  @default(true)
+  createdAt             DateTime @default(now())
   
   // Relations
   submissions     Asset[]  @relation("SubmittedAssets")

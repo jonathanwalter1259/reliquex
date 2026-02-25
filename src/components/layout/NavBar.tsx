@@ -184,6 +184,13 @@ export default function NavBar() {
 
                                     {isDropdownOpen && (
                                         <div className="absolute top-full right-0 mt-2 bg-[#000] border border-[#333] min-w-[150px] shadow-[0_0_15px_rgba(0,255,0,0.1)] z-50">
+                                            <Link
+                                                href="/dashboard/settings"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                                className="w-full block text-left font-mono text-[11px] text-[#888] hover:text-[#00ff41] hover:bg-[#00ff41]/5 px-4 py-3 transition-colors tracking-widest uppercase border-l-2 border-transparent hover:border-[#00ff41]"
+                                            >
+                                                &gt; SETTINGS_
+                                            </Link>
                                             <button
                                                 onClick={handleDisconnect}
                                                 className="w-full text-left font-mono text-[11px] text-[#ff0033] hover:text-[#000] hover:bg-[#ff0033] px-4 py-3 transition-colors tracking-widest uppercase border-l-2 border-transparent hover:border-[#fff]"
