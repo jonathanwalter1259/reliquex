@@ -119,7 +119,13 @@ export default function NavBar() {
     return (
         <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`} id="navbar">
             <div className="container nav-container">
-                <Link href="/" className="logo">
+                <Link href="/" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#00ff41" strokeWidth="2" strokeLinejoin="round" />
+                        <path d="M2 17L12 22L22 17" stroke="#00ff41" strokeWidth="2" strokeLinejoin="round" />
+                        <path d="M2 12L12 17L22 12" stroke="#00ff41" strokeWidth="2" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="3" fill="#00ff41" fillOpacity="0.2" />
+                    </svg>
                     RELIQUE<span>X</span>
                 </Link>
 
