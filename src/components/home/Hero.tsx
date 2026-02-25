@@ -97,15 +97,23 @@ export default function Hero() {
                 </Link>
             </div>
 
-            {/* Orynth Badge */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+            {/* Trust Badges */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', marginTop: '2rem', flexWrap: 'wrap' }}>
+                {/* Product Hunt Badge */}
+                <a href="https://www.producthunt.com/products/reliquex?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-reliquex" target="_blank" rel="noopener noreferrer">
+                    <img
+                        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1085957&amp;theme=dark&amp;t=1772054094445"
+                        alt="ReliqueX - Fractional Luxury on BNB Chain | Product Hunt"
+                        style={{ width: '250px', height: '54px', display: 'block' }}
+                    />
+                </a>
+
+                {/* Orynth Badge */}
                 <a href="https://orynth.dev/projects/reliquex" target="_blank" rel="noopener noreferrer">
                     <img
                         src="https://orynth.dev/api/badge/reliquex?theme=dark&style=default"
                         alt="Featured on Orynth"
-                        width={260}
-                        height={80}
-                        style={{ display: 'block' }}
+                        style={{ width: '250px', height: '54px', display: 'block' }}
                     />
                 </a>
             </div>
