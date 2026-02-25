@@ -11,7 +11,14 @@
 <p align="center">
   <a href="https://reliquex.com">Live App</a> •
   <a href="https://bscscan.com/address/0x9Fb052ABa7C41A06D08A4167CDFbF22b592Cc77D">Smart Contract</a> •
-  <a href="https://reliquex.com/whitepaper">Whitepaper</a>
+  <a href="https://reliquex.com/whitepaper">Whitepaper</a> •
+  <a href="https://www.orynth.dev/projects/reliquex">Orynth</a>
+</p>
+
+<p align="center">
+  <a href="https://www.orynth.dev/projects/reliquex">
+    <img src="https://orynth.dev/api/badge/reliquex?theme=dark&style=default" alt="Featured on Orynth" width="260" />
+  </a>
 </p>
 
 <p align="center">
@@ -143,7 +150,7 @@ function claimPhysical(uint256 _assetId) external
 
 ```bash
 # Clone the repo
-git clone https://github.com/truthset-market/reliquex.git
+git clone https://github.com/jonathanwalter1259/reliquex.git
 cd reliquex
 
 # Install dependencies
@@ -210,6 +217,26 @@ ReliqueX implements the following measures for BNB Chain dAppBay listing:
 - ✅ **Risk Disclosure** — Permanent, un-hideable legal disclaimer on every page
 - ✅ **Transparency Ledger** — On-chain Proof of Reserves data visible on each asset page
 - ✅ **BscScan Verified** — Flattened source code ready for public verification
+
+---
+
+## 🚀 Featured on Orynth
+
+ReliqueX is officially listed and featured on **[Orynth](https://www.orynth.dev/projects/reliquex)** — a curated directory for innovative Web3 products and protocols.
+
+<p align="center">
+  <a href="https://www.orynth.dev/projects/reliquex">
+    <img src="https://orynth.dev/api/badge/reliquex?theme=dark&style=default" alt="Featured on Orynth" width="260" />
+  </a>
+</p>
+
+| | |
+|---|---|
+| **Profile** | [orynth.dev/projects/reliquex](https://www.orynth.dev/projects/reliquex) |
+| **Category** | Web3 / DeFi / Real-World Assets |
+| **Status** | ✅ Live & Verified |
+
+Orynth provides independent visibility and community-driven discovery for blockchain projects. Our listing helps users discover ReliqueX through a trusted, neutral platform.
 
 ---
 

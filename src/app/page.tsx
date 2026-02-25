@@ -1,5 +1,6 @@
 import Hero from '@/components/home/Hero';
 import TrustBanner from '@/components/home/TrustBanner';
+import OrynthPartnership from '@/components/home/OrynthPartnership';
 import ProtocolInfra from '@/components/home/ProtocolInfra';
 import RoadmapSection from '@/components/home/RoadmapSection';
 import LandingFaq from '@/components/home/LandingFaq';
@@ -13,6 +14,7 @@ export default function Home() {
     <main>
       <Hero />
       <TrustBanner />
+      <OrynthPartnership />
       <ProtocolInfra />
       <RoadmapSection />
       <LandingFaq />
