@@ -7,23 +7,75 @@ export default function RiskDisclosure() {
     return (
         <div
             id="risk-disclosure-banner"
-            className="w-full bg-[#0a0a0a] border-t border-b border-[#00FF00]/20 py-4 px-6 font-mono text-[10px] tracking-widest uppercase text-center relative overflow-hidden select-none"
+            style={{
+                width: '100%',
+                background: '#080808',
+                borderTop: '1px solid rgba(255, 0, 51, 0.15)',
+                borderBottom: '1px solid rgba(255, 0, 51, 0.15)',
+                padding: '1.5rem 2rem',
+                fontFamily: 'var(--font-space-mono, monospace)',
+                position: 'relative',
+                overflow: 'hidden',
+                userSelect: 'none',
+            }}
         >
-            {/* Scanline effect */}
-            <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.15)_50%)] bg-[length:100%_3px] pointer-events-none opacity-30"></div>
+            {/* Scanline overlay */}
+            <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px)',
+                pointerEvents: 'none',
+                opacity: 0.4,
+            }} />
 
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 relative z-10">
-                <span className="text-red-500 font-bold animate-pulse whitespace-nowrap">
-                    ⚠ RISK_DISCLOSURE
-                </span>
-                <span className="text-[#888] leading-relaxed">
+            <div style={{
+                maxWidth: '64rem',
+                margin: '0 auto',
+                position: 'relative',
+                zIndex: 10,
+                textAlign: 'center',
+            }}>
+                {/* Label Row */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '0.75rem',
+                }}>
+                    <span style={{
+                        color: '#ff0033',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                    }}>
+                        ⚠ RISK_DISCLOSURE
+                    </span>
+                    <span style={{
+                        color: 'rgba(0,255,65,0.3)',
+                        fontSize: '0.6rem',
+                        letterSpacing: '0.15em',
+                        textTransform: 'uppercase',
+                    }}>
+                        [DAPPBAY_COMPLIANT]
+                    </span>
+                </div>
+
+                {/* Disclosure Text */}
+                <p style={{
+                    color: '#666',
+                    fontSize: '0.6rem',
+                    lineHeight: 1.8,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    maxWidth: '52rem',
+                    margin: '0 auto',
+                }}>
                     ReliqueX tokens represent fractional ownership of authenticated physical assets. Token values may fluctuate.
-                    Past performance does not guarantee future results. This is NOT financial advice. Trade at your own risk.
+                    Past performance does not guarantee future results. This is not financial advice. Trade at your own risk.
                     All transactions are final and recorded on the BNB Smart Chain.
-                </span>
-                <span className="text-[#00FF00]/40 whitespace-nowrap hidden md:inline">
-                    [DAPPBAY_COMPLIANT]
-                </span>
+                </p>
             </div>
         </div>
     );
