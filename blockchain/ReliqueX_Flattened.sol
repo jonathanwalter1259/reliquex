@@ -1,7 +1,6 @@
-[dotenv@17.3.1] injecting env (1) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+// SPDX-License-Identifier: MIT
 // Sources flattened with hardhat v3.1.9 https://hardhat.org
 
-// SPDX-License-Identifier: MIT
 
 // File npm/@openzeppelin/contracts@5.4.0/utils/Context.sol
 

@@ -26,7 +26,9 @@
   <img src="https://img.shields.io/badge/ERC--1155-Compliant-5C6BC0?style=flat-square&logo=ethereum" />
   <img src="https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat-square&logo=solidity" />
   <img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs" />
-  <img src="https://img.shields.io/badge/dAppBay-Compliant-00FF00?style=flat-square" />
+  <a href="https://dappbay.bnbchain.org/detail/reliquex">
+    <img src="https://img.shields.io/badge/dAppBay-Compliant-00FF00?style=flat-square" alt="dAppBay Compliant" />
+  </a>
 </p>
 
 ---
@@ -207,9 +209,9 @@ npx hardhat flatten contracts/ReliqueX.sol > ReliqueX_Flattened.sol
 
 ---
 
-## dAppBay Compliance
+## [dAppBay Compliance](https://dappbay.bnbchain.org/detail/reliquex)
 
-ReliqueX implements the following measures for BNB Chain dAppBay listing:
+ReliqueX implements the following measures for [BNB Chain dAppBay](https://dappbay.bnbchain.org/detail/reliquex) listing:
 
 - ✅ **Anti-Rug: Time-Lock Minting** — 24h delay between mint proposal and execution
 - ✅ **No Honeypot** — No hidden fees, pause, or blacklist in the ERC-1155 contract

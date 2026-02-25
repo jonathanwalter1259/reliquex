@@ -4,7 +4,7 @@ export default function TrustBanner() {
             <div className="container">
                 <p className="trust-banner__label">&gt; SYSTEM_TRUST_VERIFIED // FEATURED PROTOCOLS:</p>
                 <div className="trust-banner__logos">
-                    <span className="trust-banner__logo trust-banner__logo--featured">dAppBay</span>
+                    <a href="https://dappbay.bnbchain.org/detail/reliquex" target="_blank" rel="noopener noreferrer" className="trust-banner__logo trust-banner__logo--featured" style={{ textDecoration: 'none', color: 'inherit' }}>dAppBay</a>
                     <span className="trust-banner__logo">BNB Chain</span>
                     <span className="trust-banner__logo">Product Hunt</span>
                     <span className="trust-banner__logo">CoinMarketCap</span>
