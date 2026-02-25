@@ -285,7 +285,20 @@ export default function AssetPage(props: { params: Promise<{ id: string }> }) {
                             </div>
 
                             {/*  CTA  */}
-                            {!isConnected ? (
+                            {!countdown.expired ? (
+                                <div className="mt-6 w-full flex flex-col gap-3">
+                                    <button disabled className="trade-cta flex items-center justify-center gap-2 w-full opacity-40 cursor-not-allowed" style={{ filter: 'grayscale(0.5)' }}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                        </svg>
+                                        TRADING_LOCKED — LAUNCHES MAR 07
+                                    </button>
+                                    <div style={{ color: '#888', fontSize: '0.65rem', textAlign: 'center', letterSpacing: '0.1em', fontFamily: 'var(--font-space-mono, monospace)' }}>
+                                        &gt; ACQUISITION_PROTOCOL WILL ACTIVATE POST-LAUNCH
+                                    </div>
+                                </div>
+                            ) : !isConnected ? (
                                 <div className="mt-6 flex justify-center w-full">
                                     <appkit-button />
                                 </div>
