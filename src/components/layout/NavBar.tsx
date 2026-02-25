@@ -152,16 +152,33 @@ export default function NavBar() {
                 </div>
 
                 {mounted && (
-                    <div style={{ marginLeft: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ marginLeft: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         {isConnected ? (
-                            <div className="flex items-center gap-3">
-                                {/* Address Display & Dropdown */}
-                                <div className="relative">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                {/* Address Chip */}
+                                <div style={{ position: 'relative' }}>
                                     <button
                                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                        className="font-mono text-[11px] border border-[#333] px-3 py-1.5 text-[#fff] bg-[#111] uppercase tracking-wider hover:border-[#00ff41] transition-colors cursor-pointer flex items-center gap-2"
+                                        style={{
+                                            fontFamily: 'var(--font-space-mono, monospace)',
+                                            fontSize: '11px',
+                                            letterSpacing: '0.08em',
+                                            textTransform: 'uppercase',
+                                            color: '#fff',
+                                            background: '#0a0a0a',
+                                            border: '1px solid #333',
+                                            padding: '8px 14px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+                                        }}
+                                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#00ff41'; e.currentTarget.style.boxShadow = '0 0 8px rgba(0,255,65,0.15)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.boxShadow = 'none'; }}
                                     >
-                                        <span className="text-[#888]">ID:</span>
+                                        <span style={{ color: '#555' }}>●</span>
+                                        <span style={{ color: '#888' }}>ID:</span>
                                         {address?.slice(0, 6)}...{address?.slice(-4)}
                                     </button>
 
@@ -179,11 +196,24 @@ export default function NavBar() {
 
                                 {/* Auth Status/Button */}
                                 {!isAuthenticated ? (
-                                    <div className="flex flex-col items-end gap-1 relative">
+                                    <div style={{ position: 'relative' }}>
                                         <button
                                             onClick={handleAuthenticate}
                                             disabled={isAuthenticating}
-                                            className="font-mono text-[11px] tracking-widest px-4 py-1.5 border border-[#00ff41] text-[#00ff41] hover:bg-[#00ff41] hover:text-black transition-colors"
+                                            style={{
+                                                fontFamily: 'var(--font-space-mono, monospace)',
+                                                fontSize: '11px',
+                                                letterSpacing: '0.1em',
+                                                textTransform: 'uppercase',
+                                                color: '#00ff41',
+                                                background: 'transparent',
+                                                border: '1px solid #00ff41',
+                                                padding: '8px 16px',
+                                                cursor: isAuthenticating ? 'wait' : 'pointer',
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                            onMouseEnter={e => { if (!isAuthenticating) { e.currentTarget.style.background = '#00ff41'; e.currentTarget.style.color = '#000'; } }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#00ff41'; }}
                                         >
                                             {isAuthenticating ? '[SIGNING...]' : 'AUTHENTICATE'}
                                         </button>
@@ -196,7 +226,16 @@ export default function NavBar() {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="font-mono text-[11px] tracking-widest px-4 py-1.5 bg-[rgba(0,255,0,0.1)] text-[#00ff41] border border-[#00ff41]">
+                                    <div style={{
+                                        fontFamily: 'var(--font-space-mono, monospace)',
+                                        fontSize: '11px',
+                                        letterSpacing: '0.1em',
+                                        padding: '8px 14px',
+                                        background: 'rgba(0,255,65,0.08)',
+                                        color: '#00ff41',
+                                        border: '1px solid rgba(0,255,65,0.3)',
+                                        textTransform: 'uppercase',
+                                    }}>
                                         [AUTHENTICATED]
                                     </div>
                                 )}
@@ -204,8 +243,38 @@ export default function NavBar() {
                         ) : (
                             <button
                                 onClick={() => open()}
-                                className="font-mono text-xs tracking-widest px-6 py-2 border border-[#00ff41] text-[#00ff41] bg-transparent hover:bg-[#00ff41] hover:text-black transition-colors"
+                                style={{
+                                    fontFamily: 'var(--font-space-mono, monospace)',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    letterSpacing: '0.12em',
+                                    textTransform: 'uppercase',
+                                    color: '#00ff41',
+                                    background: 'transparent',
+                                    border: '1px solid #00ff41',
+                                    padding: '10px 24px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.25s ease',
+                                    boxShadow: '0 0 6px rgba(0,255,65,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = '#00ff41';
+                                    e.currentTarget.style.color = '#000';
+                                    e.currentTarget.style.boxShadow = '0 0 16px rgba(0,255,65,0.3)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.color = '#00ff41';
+                                    e.currentTarget.style.boxShadow = '0 0 6px rgba(0,255,65,0.1)';
+                                }}
                             >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                                    <path d="M16 7V5a4 4 0 0 0-8 0v2" />
+                                </svg>
                                 CONNECT WALLET
                             </button>
                         )}
