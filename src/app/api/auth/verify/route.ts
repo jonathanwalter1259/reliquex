@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { SiweMessage } from 'siwe';
 import { cookies } from 'next/headers';
-import { PrismaClient } from '@prisma/client';
 import { setSessionCookie } from '@/lib/session';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
     try {

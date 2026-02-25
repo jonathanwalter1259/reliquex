@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession, destroySession } from '@/lib/session';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function GET() {
     const session = await getSession();
