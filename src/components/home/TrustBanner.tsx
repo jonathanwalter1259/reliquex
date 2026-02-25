@@ -8,7 +8,7 @@ export default function TrustBanner() {
                     <span className="trust-banner__logo">BNB Chain</span>
                     <span className="trust-banner__logo">Product Hunt</span>
                     <span className="trust-banner__logo">CoinMarketCap</span>
-                    <span className="trust-banner__logo">Orynth</span>
+                    <a href="https://www.orynth.dev/projects/reliquex" target="_blank" rel="noopener noreferrer" className="trust-banner__logo" style={{ textDecoration: 'none', color: 'inherit' }}>Orynth</a>
                 </div>
             </div>
         </section>
