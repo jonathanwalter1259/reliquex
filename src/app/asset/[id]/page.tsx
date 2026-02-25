@@ -7,6 +7,28 @@ import { Asset } from "@prisma/client";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem';
 import { reliqueXAddress, reliqueXABI } from '@/lib/web3/contract';
+const LAUNCH_DATE = new Date('2026-03-07T00:00:00+05:30');
+
+function useCountdown(target: Date) {
+    const [tl, setTl] = useState({ d: 0, h: 0, m: 0, s: 0, expired: false });
+    useEffect(() => {
+        const tick = () => {
+            const diff = target.getTime() - Date.now();
+            if (diff <= 0) { setTl({ d: 0, h: 0, m: 0, s: 0, expired: true }); return; }
+            setTl({
+                d: Math.floor(diff / 86400000),
+                h: Math.floor((diff % 86400000) / 3600000),
+                m: Math.floor((diff % 3600000) / 60000),
+                s: Math.floor((diff % 60000) / 1000),
+                expired: false,
+            });
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [target]);
+    return tl;
+}
 
 export default function AssetPage(props: { params: Promise<{ id: string }> }) {
     const params = use(props.params);
@@ -17,6 +39,7 @@ export default function AssetPage(props: { params: Promise<{ id: string }> }) {
     const [images, setImages] = useState<string[]>([]);
     const [activeImage, setActiveImage] = useState<string>("");
     const [sharesToBuy, setSharesToBuy] = useState(1);
+    const countdown = useCountdown(LAUNCH_DATE);
 
     const { isConnected } = useAccount();
     const { data: hash, isPending, writeContract, error: txError } = useWriteContract();
@@ -145,6 +168,64 @@ export default function AssetPage(props: { params: Promise<{ id: string }> }) {
                                 {asset.description || "No specific provenance details have been injected into the terminal for this asset."}
                             </p>
                         </div>
+
+                        {/* Launch Countdown */}
+                        {!countdown.expired && (
+                            <div style={{
+                                border: '1px solid #00ff41',
+                                padding: '1.25rem 1.5rem',
+                                marginBottom: '1.5rem',
+                                fontFamily: 'var(--font-space-mono, monospace)',
+                                background: 'rgba(0, 255, 65, 0.04)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                            }}>
+                                <div style={{
+                                    position: 'absolute', inset: 0, opacity: 0.03,
+                                    background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.1) 2px, rgba(0,255,65,0.1) 4px)',
+                                    pointerEvents: 'none',
+                                }} />
+                                <div style={{
+                                    color: '#00ff41', fontSize: '0.7rem', letterSpacing: '0.15em',
+                                    textTransform: 'uppercase', marginBottom: '0.75rem', opacity: 0.7,
+                                }}>
+                                    &gt; VAULT_LAUNCH_COUNTDOWN // FIRST ASSET DROP
+                                </div>
+                                <div style={{
+                                    display: 'flex', gap: '1.5rem', justifyContent: 'center',
+                                    flexWrap: 'wrap',
+                                }}>
+                                    {[
+                                        { val: countdown.d, label: 'DAYS' },
+                                        { val: countdown.h, label: 'HRS' },
+                                        { val: countdown.m, label: 'MIN' },
+                                        { val: countdown.s, label: 'SEC' },
+                                    ].map((u) => (
+                                        <div key={u.label} style={{ textAlign: 'center', minWidth: '70px' }}>
+                                            <div style={{
+                                                fontSize: '2rem', fontWeight: 700, color: '#00ff41',
+                                                lineHeight: 1.1,
+                                                textShadow: '0 0 12px rgba(0,255,65,0.5)',
+                                            }}>
+                                                {String(u.val).padStart(2, '0')}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '0.6rem', color: '#888', letterSpacing: '0.2em',
+                                                marginTop: '0.25rem',
+                                            }}>
+                                                {u.label}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{
+                                    color: '#888', fontSize: '0.65rem', textAlign: 'center',
+                                    marginTop: '0.75rem', letterSpacing: '0.08em',
+                                }}>
+                                    MARCH 07, 2026 — 00:00 IST
+                                </div>
+                            </div>
+                        )}
 
                         {/*  Trading Terminal Widget  */}
                         <div className="trade-terminal">
