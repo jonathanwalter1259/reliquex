@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { getSession } from '@/lib/session';
+import prisma from '@/lib/prisma';
 
 export async function PATCH(req: Request) {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
+    }
+
     try {
         const body = await req.json();
         const { id, status, authenticityScore, physicalLocation, contractAssetId } = body;
@@ -12,7 +16,7 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Asset ID is required' }, { status: 400 });
         }
 
-        const dataToUpdate: any = {};
+        const dataToUpdate: Record<string, unknown> = {};
         if (status) dataToUpdate.status = status;
         if (authenticityScore !== undefined) dataToUpdate.authenticityScore = parseInt(authenticityScore, 10);
         if (physicalLocation) dataToUpdate.physicalLocation = physicalLocation;

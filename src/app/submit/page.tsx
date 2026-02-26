@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function Submit() {
+    const { address, isConnected } = useAccount();
     const [isLoading, setIsLoading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -15,6 +17,10 @@ export default function Submit() {
         description: '',
         walletAddress: '',
     });
+
+    useEffect(() => {
+        if (address) setFormData((prev) => ({ ...prev, walletAddress: address }));
+    }, [address]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -69,7 +75,6 @@ export default function Submit() {
                     model: formData.modelRef,
                     estimatedValue: parseInt(formData.estimatedValue, 10),
                     description: formData.description,
-                    walletAddress: formData.walletAddress,
                     imagePath: imageUrls.join(','),
                 }),
             });
@@ -79,8 +84,13 @@ export default function Submit() {
                 setFormData({ category: '', brand: '', modelRef: '', estimatedValue: '', description: '', walletAddress: '' });
                 setImageUrls([]);
             } else {
-                const data = await res.json();
-                alert(`Submission failed: ${data.error || 'Unknown error'}`);
+                const data = await res.json().catch(() => ({}));
+                const msg = res.status === 401
+                    ? 'Please connect your wallet and sign in to submit an asset.'
+                    : res.status === 429
+                        ? 'Too many submissions. Please try again later.'
+                        : data.error || 'Unknown error';
+                alert(`Submission failed: ${msg}`);
             }
         } catch (error) {
             console.error(error);
@@ -189,10 +199,22 @@ export default function Submit() {
                         )}
                     </div>
 
-                    {/* Wallet Address */}
+                    {/* Wallet Address: read-only when connected; submission is attributed to signed-in wallet */}
                     <div className="form-group">
                         <label className="form-label">// WALLET_ADDRESS (BNB Chain):</label>
-                        <input name="walletAddress" value={formData.walletAddress} onChange={handleChange} type="text" className="form-input" placeholder="0x..." required />
+                        <input
+                            name="walletAddress"
+                            value={formData.walletAddress}
+                            onChange={handleChange}
+                            type="text"
+                            className="form-input"
+                            placeholder={isConnected ? undefined : 'Connect wallet and sign in to submit'}
+                            readOnly={!!address}
+                            required
+                        />
+                        {!isConnected && (
+                            <p className="text-[#ff0033] text-xs mt-1 tracking-widest uppercase">Connect your wallet and sign in to submit. Submissions are attributed to your connected wallet.</p>
+                        )}
                     </div>
 
                     {/* Disclaimer */}

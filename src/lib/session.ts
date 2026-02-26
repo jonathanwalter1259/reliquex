@@ -1,22 +1,34 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const secretKey = new TextEncoder().encode(process.env.SESSION_SECRET || 'super-secret-reliquex-key-12345!@#');
+function getSecretKey(): Uint8Array {
+    const secret = process.env.SESSION_SECRET;
+    if (!secret || secret.length < 32) {
+        throw new Error(
+            'SESSION_SECRET is required and must be at least 32 characters. Set it in your environment.'
+        );
+    }
+    return new TextEncoder().encode(secret);
+}
 
-export async function encrypt(payload: any) {
-    return await new SignJWT(payload)
+export async function encrypt(payload: unknown): Promise<string> {
+    const key = getSecretKey();
+    return await new SignJWT(payload as Record<string, unknown>)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('24h')
-        .sign(secretKey);
+        .sign(key);
 }
 
-export async function decrypt(input: string): Promise<any> {
-    const { payload } = await jwtVerify(input, secretKey, {
+export async function decrypt(input: string): Promise<unknown> {
+    const key = getSecretKey();
+    const { payload } = await jwtVerify(input, key, {
         algorithms: ['HS256'],
     });
     return payload;
 }
+
+export type SessionPayload = { walletAddress: string; role: string; expires?: number };
 
 export async function setSessionCookie(walletAddress: string, role: string) {
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -32,13 +44,14 @@ export async function setSessionCookie(walletAddress: string, role: string) {
     });
 }
 
-export async function getSession() {
+export async function getSession(): Promise<SessionPayload | null> {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('auth_session');
     if (!sessionCookie) return null;
 
     try {
-        return await decrypt(sessionCookie.value);
+        const payload = await decrypt(sessionCookie.value) as SessionPayload;
+        return payload;
     } catch (e) {
         return null;
     }

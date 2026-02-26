@@ -44,7 +44,13 @@ export async function POST(req: Request) {
         // Issue our encrypted JWT session indicating their DB roles
         await setSessionCookie(user.walletAddress, user.role);
 
-        return NextResponse.json({ success: true, user });
+        return NextResponse.json({
+            success: true,
+            user: {
+                walletAddress: user.walletAddress,
+                role: user.role,
+            },
+        });
     } catch (e: any) {
         return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }

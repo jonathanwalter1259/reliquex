@@ -4,7 +4,9 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const privateKey = process.env.PRIVATE_KEY || "0000000000000000000000000000000000000000000000000000000000000000";
+// PRIVATE_KEY must be set in .env for deployment/signing; no fallback to avoid accidental use.
+const privateKey = process.env.PRIVATE_KEY;
+const accounts = privateKey ? [privateKey] : [];
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const config = {
@@ -14,13 +16,13 @@ const config = {
             type: "http",
             url: "https://data-seed-prebsc-1-s1.binance.org:8545",
             chainId: 97,
-            accounts: [privateKey]
+            accounts
         },
         bscMainnet: {
             type: "http",
             url: "https://bsc-dataseed.binance.org/",
             chainId: 56,
-            accounts: [privateKey]
+            accounts
         }
     },
     etherscan: {
