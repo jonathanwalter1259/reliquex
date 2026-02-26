@@ -29,7 +29,7 @@ export async function PUT(req: Request) {
         } = data;
 
         const updateData: {
-            name?: string;
+            name?: string | null;
             email?: string | null;
             username?: string | null;
             notificationsNewDrops?: boolean;
