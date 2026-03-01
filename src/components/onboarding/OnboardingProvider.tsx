@@ -17,18 +17,22 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
             }),
         });
 
-        if (res.ok) {
-            refreshOnboarding();
-        } else {
+        if (!res.ok) {
             const err = await res.json();
             throw new Error(err.error || 'Failed to save profile');
         }
+        // NOTE: We do NOT call refreshOnboarding() here anymore.
+        // We wait for the modal to call onFinalize after the blockchain step.
+    };
+
+    const handleFinalize = () => {
+        refreshOnboarding();
     };
 
     return (
         <>
             {isOnboardingRequired && (
-                <OnboardingModal onComplete={handleComplete} />
+                <OnboardingModal onComplete={handleComplete} onFinalize={handleFinalize} />
             )}
             {children}
         </>

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
+[dotenv@17.3.1] injecting env (1) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
 // Sources flattened with hardhat v3.1.9 https://hardhat.org
 
+// SPDX-License-Identifier: MIT
 
 // File npm/@openzeppelin/contracts@5.4.0/utils/Context.sol
 
@@ -4051,6 +4053,10 @@ contract ReliqueX is ERC1155Supply, Ownable, ERC1155Holder {
     mapping(uint256 => uint256) public initialSupply;
     mapping(uint256 => bool) public isClaimed;
 
+    // dAppBay Analytics: Track active users directly on-chain
+    uint256 public totalUsers;
+    mapping(address => bool) public isUser;
+
     uint256 public constant MINT_DELAY = 1 days;
 
     struct MintProposal {
@@ -4070,8 +4076,32 @@ contract ReliqueX is ERC1155Supply, Ownable, ERC1155Holder {
     event SharesPurchased(uint256 indexed assetId, address indexed buyer, uint256 amount);
     event PhysicalClaimed(uint256 indexed assetId, address indexed claimer);
     event MintProposed(uint256 indexed assetId, uint256 totalShares, uint256 pricePerShare, uint256 executeAfter);
+    event UserJoined(address indexed user, uint256 totalUsers);
 
     constructor() ERC1155("") Ownable(msg.sender) {}
+
+    /**
+     * @dev Explicit registration for dAppBay analytics. Allows users to be counted before their first transaction.
+     */
+    function registerUser() external {
+        require(!isUser[msg.sender], "User already registered");
+        isUser[msg.sender] = true;
+        totalUsers++;
+        emit UserJoined(msg.sender, totalUsers);
+    }
+
+    /**
+     * @dev Override ERC1155 _update to track unique users on-chain for dAppBay analytics.
+     */
+    function _update(address from, address to, uint256[] memory ids, uint256[] memory values) internal virtual override {
+        super._update(from, to, ids, values);
+
+        if (to != address(0) && to != address(this) && !isUser[to]) {
+            isUser[to] = true;
+            totalUsers++;
+            emit UserJoined(to, totalUsers);
+        }
+    }
 
     /**
      * @dev Override ERC1155 URI to return the IPFS hash for each specific authenticated token
