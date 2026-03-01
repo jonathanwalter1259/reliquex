@@ -93,7 +93,7 @@ export default function NavBar() {
                 setUserRole(data.user?.role || 'USER');
             } else {
                 const errData = await verifyRes.json();
-                setAuthError(errData.error || 'Verification failed');
+                setAuthError(errData.details || errData.error || 'Verification failed');
             }
         } catch (error: any) {
             console.error("SIWE Manual Auth Failed:", error);

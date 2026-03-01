@@ -23,7 +23,9 @@ createAppKit({
     projectId,
     networks,
     features: {
-        analytics: false
+        analytics: false,
+        email: false, // Disable email login
+        socials: [] // Disable social logins
     }
 });
 

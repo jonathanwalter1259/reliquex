@@ -16,29 +16,27 @@ export async function POST(req: Request) {
 
         const siweMessage = new SiweMessage(message);
 
-        // Log details for debugging
-        console.log('SIWE Verification Attempt:', {
-            domain: siweMessage.domain,
-            host: req.headers.get('host'),
-            uri: siweMessage.uri,
-            nonce: siweMessage.nonce,
-            expectedNonce: nonceCookie.value
-        });
-
         const { data, success, error } = await siweMessage.verify({
             signature,
             nonce: nonceCookie.value,
+            domain: siweMessage.domain, // Ensure we verify against the domain the message was signed for
         });
 
         if (!success) {
+            const siweError = error as any;
             console.error('SIWE Verification Failed:', {
-                error,
+                errorType: siweError?.type,
+                errorMessage: siweError?.message,
                 receivedNonce: siweMessage.nonce,
                 expectedNonce: nonceCookie.value,
                 domain: siweMessage.domain,
                 host: req.headers.get('host')
             });
-            return NextResponse.json({ success: false, error: error?.type || 'Invalid signature' }, { status: 422 });
+            return NextResponse.json({
+                success: false,
+                error: siweError?.type || 'Invalid signature',
+                details: siweError?.message || String(error)
+            }, { status: 422 });
         }
 
         // Signature is valid! Let's find or create the user in our database
