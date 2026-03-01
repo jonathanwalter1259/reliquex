@@ -15,6 +15,16 @@ export async function POST(req: Request) {
         }
 
         const siweMessage = new SiweMessage(message);
+
+        // Log details for debugging
+        console.log('SIWE Verification Attempt:', {
+            domain: siweMessage.domain,
+            host: req.headers.get('host'),
+            uri: siweMessage.uri,
+            nonce: siweMessage.nonce,
+            expectedNonce: nonceCookie.value
+        });
+
         const { data, success, error } = await siweMessage.verify({
             signature,
             nonce: nonceCookie.value,

@@ -136,10 +136,11 @@ body::after {
 }
 
 .main-content {
-  padding-top: var(--navbar-height);
+  padding-top: calc(var(--navbar-height) + 4rem);
   min-height: calc(100vh - var(--navbar-height));
   display: flex;
   flex-direction: column;
+  gap: 2rem;
 }
 
 /* ---------- Navigation ---------- */
