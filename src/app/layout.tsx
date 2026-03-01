@@ -40,7 +40,9 @@ export default function RootLayout({
           <OnboardingProvider>
             <ScrollObserver />
             <NavBar />
-            {children}
+            <main className="main-content">
+              {children}
+            </main>
             <RiskDisclosure />
             <Footer />
           </OnboardingProvider>

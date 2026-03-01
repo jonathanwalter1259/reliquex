@@ -21,6 +21,13 @@ export async function POST(req: Request) {
         });
 
         if (!success) {
+            console.error('SIWE Verification Failed:', {
+                error,
+                receivedNonce: siweMessage.nonce,
+                expectedNonce: nonceCookie.value,
+                domain: siweMessage.domain,
+                host: req.headers.get('host')
+            });
             return NextResponse.json({ success: false, error: error?.type || 'Invalid signature' }, { status: 422 });
         }
 

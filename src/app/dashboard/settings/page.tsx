@@ -95,7 +95,7 @@ export default function SettingsPage() {
 
     if (!isConnected) {
         return (
-            <main className="min-h-screen pt-32 pb-20 flex items-center justify-center">
+            <main className="flex-1 pb-20 flex items-center justify-center">
                 <div className="text-[#ff0033] font-mono tracking-[0.2em] animate-pulse">
                     &gt; ERROR: WALLET_DISCONNECTED_ACCESS_DENIED_
                 </div>
@@ -104,7 +104,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <main className="min-h-screen pt-32 pb-20 bg-black font-mono">
+        <main className="flex-1 pb-20 bg-black font-mono">
             <div className="container mx-auto px-6 max-w-4xl">
                 <div className="mb-12 border-b border-[#00ff41]/30 pb-6 relative">
                     <div className="absolute bottom-0 left-0 w-32 h-[1px] bg-[#00ff41] shadow-[0_0_10px_#00ff41]"></div>

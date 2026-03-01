@@ -31,6 +31,9 @@
   --w3m-font-family: var(--mono);
   --w3m-accent: #00ff41;
   --w3m-border-radius-master: 0px;
+
+  /* Layout Constants */
+  --navbar-height: 80px;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -130,6 +133,13 @@ body::after {
   padding: 0 clamp(1rem, 4vw, 3rem);
   position: relative;
   z-index: 1;
+}
+
+.main-content {
+  padding-top: var(--navbar-height);
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  flex-direction: column;
 }
 
 /* ---------- Navigation ---------- */
