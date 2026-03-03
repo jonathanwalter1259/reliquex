@@ -1,3 +1,4 @@
+// ReliqueX - Fractional Luxury Main Layout
 import type { Metadata } from "next";
 import { Inter, Space_Mono } from "next/font/google";
 import NavBar from "@/components/layout/NavBar";
