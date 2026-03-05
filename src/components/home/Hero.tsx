@@ -95,6 +95,17 @@ export default function Hero() {
                         <polyline points="12 5 19 12 12 19" />
                     </svg>
                 </Link>
+
+                {/* Solana Integration Status */}
+                <div className="mt-8">
+                    <div className="font-mono text-[10px] md:text-sm text-[#00FF41] tracking-[0.2em] mb-4 animate-terminal-pulse">
+                        &gt; NETWORK_STATE: BNB CHAIN [LIVE] | SOLANA SVM [INITIALIZING...]
+                    </div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#9945FF] text-[#9945FF] font-mono text-[10px] tracking-widest uppercase animate-solana-pulse">
+                        <span className="w-1.5 h-1.5 bg-[#9945FF] rounded-none animate-pulse"></span>
+                        Powered by Solana (Soon)
+                    </div>
+                </div>
             </div>
 
             {/* Trust Badges */}

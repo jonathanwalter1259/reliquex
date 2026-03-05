@@ -32,8 +32,9 @@
   --w3m-accent: #00ff41;
   --w3m-border-radius-master: 0px;
 
-  /* Layout Constants */
-  --navbar-height: 80px;
+  /* Solana Specific SVM Colors */
+  --solana-purple: #9945FF;
+  --solana-glow: rgba(153, 69, 255, 0.4);
 }
 
 /* ---------- Reset & Base ---------- */
@@ -209,16 +210,52 @@ body::after {
   animation: cursorBlink 1s step-end infinite;
 }
 
-@keyframes cursorBlink {
+@keyframes terminalPulse {
 
   0%,
   100% {
     opacity: 1;
+    text-shadow: 0 0 10px var(--neon-glow);
   }
 
   50% {
-    opacity: 0;
+    opacity: 0.6;
+    text-shadow: 0 0 4px var(--neon-glow);
   }
+}
+
+@keyframes solanaPulse {
+
+  0%,
+  100% {
+    border-color: var(--solana-purple);
+    box-shadow: 0 0 10px var(--solana-glow);
+  }
+
+  50% {
+    border-color: rgba(153, 69, 255, 0.5);
+    box-shadow: 0 0 4px var(--solana-glow);
+  }
+}
+
+.animate-terminal-pulse {
+  animation: terminalPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-solana-pulse {
+  animation: solanaPulse 3s ease-in-out infinite;
+}
+
+.text-solana {
+  color: var(--solana-purple);
+}
+
+.border-solana {
+  border-color: var(--solana-purple);
+}
+
+.bg-solana-glow {
+  background: var(--solana-glow);
 }
 
 .nav-links {

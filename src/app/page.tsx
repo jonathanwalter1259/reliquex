@@ -8,6 +8,7 @@ import VerificationProtocol from '@/components/home/VerificationProtocol';
 import Lifestyle from '@/components/home/Lifestyle';
 import BottomInfo from '@/components/home/BottomInfo';
 import Marketplace from '@/components/home/Marketplace';
+import SolanaExpansion from '@/components/home/SolanaExpansion';
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
       <Lifestyle />
       <BottomInfo />
       <Marketplace />
+      <SolanaExpansion />
     </main>
   );
 }

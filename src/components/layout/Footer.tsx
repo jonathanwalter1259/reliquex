@@ -40,6 +40,9 @@ export default function Footer() {
                         <Link href="/about" className="footer__nav-link">About Us</Link>
                         <Link href="/whitepaper" className="footer__nav-link">Whitepaper</Link>
                         <Link href="/roadmap" className="footer__nav-link">Roadmap</Link>
+                        <div className="footer__nav-link flex items-center gap-2">
+                            Solana <span className="text-[10px] text-[#9945FF] border border-[#9945FF] px-1 animate-pulse font-mono">[COMING SOON]</span>
+                        </div>
                         <a href="https://dappbay.bnbchain.org/detail/reliquex" target="_blank" rel="noopener noreferrer" className="footer__nav-link" style={{ color: '#00ff41' }}>
                             dAppBay Verified ↗
                         </a>
