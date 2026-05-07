@@ -1,0 +1,30 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model HistoricalPrompt {
+  id                    String   @id @default(cuid())
+  
+  title                 String
+  promptText            String
+  
+  modelVersion          String   
+  dateOfFirstDiscovery  DateTime
+  
+  technicalSignificance String   
+  
+  curator               String   
+  c2paManifestId        String?  
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([modelVersion])
+  @@index([dateOfFirstDiscovery])
+}
